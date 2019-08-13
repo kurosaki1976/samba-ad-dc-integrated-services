@@ -2,8 +2,8 @@
 
 ## Autores
 
-- [Yoel Torres Vázquez](yoel.torres.v@gmail.com)
-- [Ixen Rodríguez Pérez](ixenrp1976@gmail.com)
+- [Yoel Torres Vázquez - oneohthree](yoel.torres.v@gmail.com)
+- [Ixen Rodríguez Pérez - kurosaki1976](ixenrp1976@gmail.com)
 
 ## Tabla de contenidos
 
