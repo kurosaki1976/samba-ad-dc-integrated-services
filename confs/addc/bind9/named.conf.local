@@ -1,0 +1,3 @@
+dlz "samba4" {
+	database "dlopen /usr/lib/x86_64-linux-gnu/samba/bind9/dlz_bind9_10.so";
+};

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+PERCENT=${1}
+USER=${2}
+DOMAIN=${USER#*@}
+
+cat << EOT | /usr/lib/dovecot/dovecot-lda -d ${USER} -o "plugin/quota=maildir:User quota:noenforcing"
+From: no-reply@${DOMAIN}
+Subject: ALERTA: USO DE CUOTA SUPERIOR AL ${PERCENT}%
+
+ESTIMADO(A) USUARIO(A),
+
+SU BUZON DE CORREO ACTUALMENTE OCUPA MAS DEL ${PERCENT}% DE LA CUOTA ASIGNADA.
+BORRE ALGUNOS CORREOS VIEJOS PARA PODER SEGUIR RECIBIENDO EMAILS.
+
+MENSAJE AUTOMATIZADO DEL SISTEMA
+EOT
+
+exit 0

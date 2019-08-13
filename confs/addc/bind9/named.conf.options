@@ -1,0 +1,11 @@
+options {
+	directory "/var/cache/bind";
+	forwarders { 8.8.8.8; 8.8.4.4; };
+	forward first;
+	dnssec-validation no;
+	auth-nxdomain no;
+	listen-on-v6 { none; };
+	tkey-gssapi-keytab "/var/lib/samba/private/dns.keytab";
+	allow-query { any; };
+	recursion yes;
+};

@@ -1,0 +1,152 @@
+### MAIN
+mydomain = example.tld
+myhostname = mail.$mydomain
+myorigin = $mydomain
+mydestination = $myhostname, localhost.$mydomain, localhost
+smtpd_banner = $myhostname ESMTP
+biff = no
+append_dot_mydomain = no
+readme_directory = no
+compatibility_level = 2
+home_mailbox = Maildir/
+alias_maps = hash:/etc/aliases
+alias_database = hash:/etc/aliases
+relayhost =
+mynetworks = 127.0.0.0/8
+mailbox_size_limit = 0
+message_size_limit = 2097152
+recipient_delimiter = +
+inet_interfaces = all
+inet_protocols = ipv4
+address_verify_sender = mailer-daemon@$mydomain
+address_verify_sender_ttl = 8h
+strict_rfc821_envelopes = yes
+show_user_unknown_table_name = no
+
+### SASL
+smtpd_sasl_auth_enable = yes
+broken_sasl_auth_clients = yes
+
+### TLS
+smtp_tls_security_level = may
+smtpd_tls_ask_ccert = yes
+smtpd_tls_security_level = may
+smtpd_tls_auth_only = no
+smtp_tls_note_starttls_offer = yes
+smtp_tls_loglevel = 1
+smtpd_tls_loglevel = 1
+smtpd_tls_received_header = yes
+smtpd_tls_protocols = !SSLv2 !SSLv3 !TLSv1 !TLSv1.1
+smtpd_tls_mandatory_protocols = !SSLv2 !SSLv3 !TLSv1 !TLSv1.1
+smtp_tls_protocols = !SSLv2 !SSLv3 !TLSv1 !TLSv1.1
+smtp_tls_mandatory_protocols = !SSLv2 !SSLv3 !TLSv1 !TLSv1.1
+lmtp_tls_protocols = !SSLv2 !SSLv3 !TLSv1 !TLSv1.1
+lmtp_tls_mandatory_protocols = !SSLv2 !SSLv3 !TLSv1 !TLSv1.1
+smtpd_tls_mandatory_ciphers = medium
+tls_medium_cipherlist = AES128+EECDH:AES128+EDH
+smtpd_tls_exclude_ciphers =
+    aNULL,
+    eNULL,
+    EXPORT,
+    DES,
+    RC4,
+    MD5,
+    PSK,
+    aECDH,
+    EDH-DSS-DES-CBC3-SHA,
+    EDH-RSA-DES-CDC3-SHA,
+    KRB5-DE5, CBC3-SHA
+smtpd_tls_dh1024_param_file = /etc/ssl/dh2048.pem
+tls_random_source = dev:/dev/urandom
+smtpd_tls_cert_file=/etc/ssl/certs/exampleMail.crt
+smtpd_tls_key_file=/etc/ssl/private/exampleMail.key
+smtpd_tls_CAfile = /etc/ssl/certs/exampleMail.crt
+smtpd_use_tls=yes
+smtpd_tls_session_cache_database =
+    btree:${data_directory}/smtpd_scache
+smtp_tls_session_cache_database =
+    btree:${data_directory}/smtp_scache
+smtpd_sasl_local_domain = $mydomain
+
+### VIRTUAL ENVIRONMENT
+virtual_minimum_uid = 5000
+virtual_uid_maps = static:5000
+virtual_gid_maps = static:5000
+virtual_mailbox_base = /var/vmail
+virtual_mailbox_domains = $mydomain
+
+### DOVECOT INTEGRATION
+smtpd_sasl_type = dovecot
+smtpd_sasl_path = private/auth
+local_transport = virtual
+virtual_transport = lmtp:unix:private/dovecot-lmtp
+dovecot_destination_recipient_limit = 1
+
+### SAMBA AD DC INTREGRATION
+virtual_mailbox_maps =
+    proxy:ldap:/etc/postfix/virtual_mailbox_maps.cf
+virtual_alias_maps =
+    proxy:ldap:/etc/postfix/virtual_list_maps.cf
+    proxy:ldap:/etc/postfix/virtual_alias_maps.cf
+local_recipient_maps = $virtual_mailbox_maps
+
+### SMTPD CLIENT RESTRICTIONS
+smtpd_client_restrictions =
+    permit_mynetworks
+    permit_sasl_authenticated
+
+### SMTPD RELAY RESTRICTIONS
+smtpd_relay_restrictions =
+    permit_mynetworks
+    permit_sasl_authenticated
+    reject_unauth_destination
+
+### SMTPD UNLISTED RESTRICTIONS
+smtpd_reject_unlisted_recipient = yes
+smtpd_reject_unlisted_sender = yes
+
+### SMTPD HELO RESTRICTIONS
+smtpd_helo_required = yes
+smtp_helo_name = $myhostname
+smtpd_helo_restrictions =
+    permit_mynetworks
+    reject_non_fqdn_helo_hostname
+    reject_unknown_helo_hostname
+    reject_invalid_helo_hostname
+    reject_invalid_hostname
+    permit_sasl_authenticated
+
+### SMTPD SENDER RESTRICTIONS
+smtpd_sender_login_maps =
+    proxy:ldap:/etc/postfix/virtual_sender_login_maps.cf
+smtpd_sender_restrictions =
+    permit_mynetworks
+    reject_sender_login_mismatch
+    reject_unknown_sender_domain
+    warn_if_reject reject_unverified_sender
+    reject_non_fqdn_sender
+    reject_unlisted_sender
+    permit_sasl_authenticated
+unverified_sender_reject_reason = Address verification failed
+
+### SMTPD RECIPIENT RESTRICTIONS
+smtpd_recipient_limit = 10
+smtpd_recipient_overshoot_limit = $smtpd_recipient_limit
+smtpd_recipient_restrictions =
+    reject_unauth_pipelining
+    reject_unknown_recipient_domain
+    reject_non_fqdn_recipient
+    reject_unlisted_recipient
+    permit_mynetworks
+    permit_sasl_authenticated
+    reject_unauth_destination
+    permit
+unverified_recipient_reject_reason = Address lookup failed
+
+### SMTPD DATA RESTRICTIONS
+smtpd_data_restrictions =
+    reject_unauth_pipelining
+
+### BCC
+enable_original_recipient = no
+always_bcc = archive@example.tld

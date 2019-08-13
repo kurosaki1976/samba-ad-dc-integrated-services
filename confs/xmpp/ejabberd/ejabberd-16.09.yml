@@ -1,0 +1,202 @@
+###'  ejabberd configuration file
+
+###.  =======
+###'  LOGGING
+loglevel: 4
+log_rotate_size: 0
+log_rotate_date: ""
+log_rate_limit: 100
+
+###.  ================
+###'  SERVED HOSTNAMES
+hosts:
+  - "example.tld"
+
+###.  ===============
+###'  LISTENING PORTS
+listen:
+  -
+    port: 5222
+    ip: "::"
+    module: ejabberd_c2s
+    certfile: "/etc/ejabberd/ejabberd.pem"
+    starttls: true
+    protocol_options:
+      - "no_sslv3"
+    max_stanza_size: 65536
+    shaper: c2s_shaper
+    access: c2s
+    zlib: true
+    resend_on_timeout: if_offline
+  -
+    port: 5269
+    ip: "::"
+    module: ejabberd_s2s_in
+  -
+    port: 5280
+    ip: "::"
+    module: ejabberd_http
+    request_handlers:
+      "/websocket": ejabberd_http_ws
+    web_admin: true
+    http_bind: true
+    tls: true
+    certfile: "/etc/ejabberd/ejabberd.pem"
+disable_sasl_mechanisms: "digest-md5"
+
+###.  ==================
+###'  S2S GLOBAL OPTIONS
+s2s_use_starttls: optional
+s2s_certfile: "/etc/ejabberd/ejabberd.pem"
+s2s_protocol_options:
+  - "no_sslv3"
+outgoing_s2s_families:
+   - ipv4
+
+###.  ==============
+###'  AUTHENTICATION
+auth_password_format: scram
+fqdn: "jb.example.tld"
+auth_method: ldap
+ldap_servers:
+  - "dc.example.tld"
+ldap_encrypt: none
+ldap_port: 389
+ldap_rootdn: "ejabberd@example.tld"
+ldap_password: "P@s$w0rd.012"
+ldap_base: "OU=ACME,DC=example,DC=tld"
+ldap_uids: {"sAMAccountName": "%u"}
+ldap_filter: "(&(objectClass=person)(!(userAccountControl:1.2.840.113556.1.4.803:=2))"
+
+###.  ===============
+###'  TRAFFIC SHAPERS
+shaper:
+  normal: 1000
+  fast: 50000
+max_fsm_queue: 1000
+
+###.   ====================
+###'   ACCESS CONTROL LISTS
+acl:
+  admin:
+     user:
+       - "john.doe@example.tld"
+  local:
+    user_regexp: ""
+  loopback:
+    ip:
+      - "127.0.0.0/8"
+
+###.  ============
+###'  SHAPER RULES
+shaper_rules:
+  max_user_sessions: 10
+  max_user_offline_messages:
+    - 5000: admin
+    - 100
+  c2s_shaper:
+    - none: admin
+    - normal
+  s2s_shaper: fast
+
+###.  ============
+###'  ACCESS RULES
+access_rules:
+  local:
+    - allow: local
+  c2s:
+    - deny: blocked
+    - allow
+  announce:
+    - allow: admin
+  configure:
+    - allow: admin
+  muc_create:
+    - allow: local
+  pubsub_createnode:
+    - allow: local
+  register:
+    - allow
+  trusted_network:
+    - allow: loopback
+
+###.  ================
+###'  DEFAULT LANGUAGE
+language: "es"
+
+###.  =======
+###'  MODULES
+modules:
+  mod_adhoc: {}
+  mod_admin_extra: {}
+  mod_announce:
+    access: announce
+  mod_blocking: {}
+  mod_caps: {}
+  mod_carboncopy: {}
+  mod_client_state: {}
+  mod_configure: {}
+  mod_disco: {}
+  mod_echo: {}
+  mod_http_bind: {}
+  mod_last: {}
+  mod_mam: {}
+  mod_muc:
+    host: "conference.@HOST@"
+    access:
+      - allow
+    access_admin:
+      - allow: admin
+    access_create: muc_create
+    access_persistent: muc_create
+  mod_muc_admin: {}
+  mod_offline:
+    access_max_user_messages: max_user_offline_messages
+  mod_ping: {}
+  mod_privacy: {}
+  mod_private: {}
+  mod_pubsub:
+    access_createnode: pubsub_createnode
+    ignore_pep_from_offline: true
+    last_item_cache: false
+    plugins:
+      - "flat"
+      - "hometree"
+      - "pep"
+  mod_roster:
+    versioning: true
+  mod_shared_roster_ldap:
+    ldap_base: "OU=ACME,DC=example,DC=tld"
+    ldap_groupattr: "department"
+    ldap_groupdesc: "department"
+    ldap_memberattr: "sAMAccountName"
+    ldap_useruid: "sAMAccountName"
+    ldap_userdesc: "cn"
+    ldap_rfilter: "(objectClass=user)"
+    ldap_filter: "(&(objectClass=person)(!(userAccountControl:1.2.840.113556.1.4.803:=2))"
+  mod_stats: {}
+  mod_time: {}
+  mod_vcard_ldap:
+    ldap_uids: {"sAMAccountName": "%u"}
+    matches: infinity
+    ldap_vcard_map:
+      "NICKNAME": {"%s": ["givenName"]}
+      "FN": {"%s": ["displayName"]}
+      "EMAIL": {"%s": ["mail"]}
+      "GIVEN": {"%s": ["givenName"]}
+      "MIDDLE": {"%s": ["middleName"]}
+      "FAMILY": {"%s": ["sn"]}
+      "ORGNAME": {"%s": ["company"]}
+      "ORGUNIT": {"%s": ["department"]}
+      "TITLE": {"%s": ["title"]}
+      "TEL": {"%s": ["telephoneNumber"]}
+    ldap_search_fields:
+      "User": "%u"
+      "Full Name":  "displayName"
+      "Email": "mail"
+    ldap_search_reported:
+      "Full Name": "FN"
+      "Nickname": "NICKNAME"
+      "Email": "EMAIL"
+  mod_version: {}
+allow_contrib_modules: true
