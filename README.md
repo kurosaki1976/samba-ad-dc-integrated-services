@@ -1,5 +1,10 @@
 # Guía para la implementación de servicios integrados a Samba4 como Active Directory Domain Controller (AD DC) en Debian 9/10
 
+## Autores
+
+- [Yoel Torres Vázquez](yoel.torres.v@gmail.com)
+- [Ixen Rodríguez Pérez](ixenrp1976@gmail.com)
+
 ## Tabla de contenidos
 
 - [Consideraciones previas](#consideraciones-previas)
