@@ -11,6 +11,9 @@ hosts:
 certfiles:
   - "/etc/ejabberd/ejabberd.pem"
 
+dhfile:
+  - "/etc/ejabberd/dh2048.pem"
+
 define_macro:
   'TLS_CIPHERS': "HIGH:!aNULL:!eNULL:!3DES:@STRENGTH"
   'TLS_OPTIONS':
