@@ -3217,6 +3217,7 @@ La integración de los servicios descritos en esta guía, también son funcional
 * [Making ejabberd 14.12 work with Microsoft Windows Active Directory](http://s.co.tt/2015/02/05/making-ejabberd-14-12-work-with-microsoft-windows-active-directory-ldap/)
 * [Remote authentication of users using Active Directory](https://support.freshservice.com/support/solutions/articles/169196-setting-up-active-directory-single-sign-on-sso-for-remote-authentication)
 * [Ejabberd + Samba4 + Shared Roster](https://admlinux.cubava.cu/2019/03/04/ejabberd-samba4-shared-roster/)
+* [Securing ejabberd with TLS encryption](https://blog.process-one.net/securing-ejabberd-with-tls-encryption/)
 
 ### Postfix/Dovecot/Roundcube Mail Server
 
