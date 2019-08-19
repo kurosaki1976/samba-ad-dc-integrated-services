@@ -23,11 +23,19 @@ listen:
     starttls: true
     protocol_options:
       - "no_sslv3"
+      - "no_sslv2"
+      - "no_tlsv1"
+      - "no_tlsv1_1"
+    ciphers: "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:\
+        ECDHE-RSA-AES128-SHA256"
     max_stanza_size: 65536
     shaper: c2s_shaper
     access: c2s
     zlib: true
     resend_on_timeout: if_offline
+    tls_compression: false
+    starttls_required: true
+    dhfile: "/etc/ssl/dh2048.pem"
   -
     port: 5269
     ip: "::"

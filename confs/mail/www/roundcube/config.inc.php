@@ -1,4 +1,5 @@
 <?php
+$config = array();
 // Database
 $config['db_dsnw'] = 'DBDRIVER://DBUSER:DBUSERPASSWD@DBHOST/DBNAME';
 // IMAP
@@ -57,8 +58,6 @@ $config['date_format'] = 'd/m/Y';
 $config['time_format'] = 'g:i a';
 $config['identities_level'] = 3;
 $config['login_autocomplete'] = 0;
-$config['preview_pane'] = true;
-$config['preview_pane_mark_read'] = 1;
 $config['refresh_interval'] = 600;
 $config['message_sort_col'] = 'date';
 $config['message_sort_order'] = 'DESC';
@@ -82,7 +81,7 @@ $config['autocomplete_addressbooks'] = array(
 );
 // Samba AD DC Address Book
 $config['ldap_public']["global_ldap_abook"] = array(
-    'name'              => 'Mailboxes',
+    'name'              => 'Directorio',
     'hosts'             => array('dc.example.tld'),
     'port'              => 389,
     'use_tls'           => false,
@@ -127,7 +126,7 @@ $config['ldap_public']["global_ldap_abook"] = array(
     'referrals'     => false,
     'group_filters' => array(
         'departments' => array(
-            'name'    => 'Lists',
+            'name'    => 'Listas',
             'scope'   => 'sub',
             'base_dn' => 'OU=Email,OU=ACME,DC=example,DC=tld',
             'filter'  => '(objectClass=group)',

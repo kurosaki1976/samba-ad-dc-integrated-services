@@ -11,9 +11,6 @@ hosts:
 certfiles:
   - "/etc/ejabberd/ejabberd.pem"
 
-dhfile:
-  - "/etc/ejabberd/dh2048.pem"
-
 define_macro:
   'TLS_CIPHERS': "HIGH:!aNULL:!eNULL:!3DES:@STRENGTH"
   'TLS_OPTIONS':
@@ -22,11 +19,14 @@ define_macro:
     - "no_tlsv1_1"
     - "cipher_server_preference"
     - "no_compression"
+  'DH_FILE': "/etc/ssl/dh2048.pem"
 
 c2s_ciphers: 'TLS_CIPHERS'
 s2s_ciphers: 'TLS_CIPHERS'
 c2s_protocol_options: 'TLS_OPTIONS'
 s2s_protocol_options: 'TLS_OPTIONS'
+c2s_dhfile: 'DH_FILE'
+s2s_dhfile: 'DH_FILE'
 
 listen:
   -
@@ -217,7 +217,8 @@ modules:
   mod_sic: {}
   mod_stream_mgmt:
     resend_on_timeout: if_offline
-  mod_vcard_ldap:
+  mod_vcard:
+    db_type: ldap
     ldap_uids: {"sAMAccountName": "%u"}
     matches: infinity
     ldap_vcard_map:
