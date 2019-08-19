@@ -75,15 +75,15 @@
     - [Debian 9 Stretch eJabberd 16.09](confs/xmpp/ejabberd/ejabberd-16.09.yml)
     - [Debian 10 Buster eJabberd 18.12](confs/xmpp/ejabberd/ejabberd-18.12.yml)
   - [Ficheros de configuración prinicipal Postfix+Samba AD DC]
-    - [Configuración general](conf/mail/postfix/main.cf)
-    - [Configuración de servicios](conf/mail/postfix/master.cf)
+    - [Configuración general](confs/mail/postfix/main.cf)
+    - [Configuración de servicios](confs/mail/postfix/master.cf)
   - [Ficheros de configuración prinicipal Dovecot+Samba AD DC]
-    - [Debian 9 Stretch Dovecot 2.2](conf/mail/dovecot/dovecot-2.2.conf)
-    - [Debian 10 Buster Dovecot 2.3](conf/mail/dovecot/dovecot-2.3.conf)
-  - [Fichero de configuración prinicipal Roundcube+Samba AD DC](conf/www/roundcube/config.inc.php)
+    - [Debian 9 Stretch Dovecot 2.2](confs/mail/dovecot/dovecot-2.2.conf)
+    - [Debian 10 Buster Dovecot 2.3](confs/mail/dovecot/dovecot-2.3.conf)
+  - [Fichero de configuración prinicipal Roundcube+Samba AD DC](confs/www/roundcube/config.inc.php)
   - [Ficheros de publicación web Roundcube]
-    - [Servidor Web Nginx](conf/www/nginx/roundcube)
-    - [Servidor Web Apache](conf/www/apache2/roundcube.conf)
+    - [Servidor Web Nginx](confs/www/nginx/roundcube)
+    - [Servidor Web Apache](confs/www/apache2/roundcube.conf)
 
 ## Consideraciones previas
 
