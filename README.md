@@ -61,27 +61,29 @@
   - [Integrar con Samba AD DC](#integrar-con-samba-ad-dc)
   - [Configuración del servicio Roundcube](#configuración-del-servicio-roundcube)
 - [Comandos y herramientas útiles](#comandos-y-herramientas-útiles)
-  - [Consideraciones finales](#consideraciones-finales)
+- [Consideraciones finales](#consideraciones-finales)
 - [Referencias](#referencias)
   - [Samba AD DC+Bind9 DNS Server](#samba-ad-dcbind9-dns-server)
   - [Squid Proxy Server](#squid-proxy-server-2)
   - [eJabberd XMPP Server](#ejabberd-xmpp-server-2)
   - [Postfix/Dovecot/Roundcube Mail Server](#postfixdovecotroundcube-mail-server-2)
 - [Anexos](#anexos)
-  - [Fichero de configuración prinicipal Squid+Samba AD DC](#fichero-de-configuración-prinicipal-squidsamba-ad-dc)
-    - [Debian 9 Stretch Squid 3.5](#debian-9-stretch-squid-35)
-    - [Debian 10 Buster Squid 4.6](#debian-10-buster-squid-46)
-  - [Fichero de configuración prinicipal eJabberd+Samba AD DC](#fichero-de-configuración-prinicipal-ejabberdsamba-ad-dc)
-    - [Debian 9 Stretch eJabberd 16.09](#debian-9-stretch-ejabberd-1609)
+  - [Ficheros de configuración prinicipal Squid+Samba AD DC]
+    - [Debian 9 Stretch Squid 3.5](confs/proxy/squid/squid-3.5.conf)
+    - [Debian 10 Buster Squid 4.6](confs/proxy/squid/squid-4.6.conf)
+  - [Ficheros de configuración prinicipal eJabberd+Samba AD DC]
+    - [Debian 9 Stretch eJabberd 16.09](confs/xmpp/ejabberd/ejabberd-16.09.yml)
     - [Debian 10 Buster eJabberd 18.12](confs/xmpp/ejabberd/ejabberd-18.12.yml)
-  - [Ficheros de configuración prinicipal Postfix+Samba AD DC](#ficheros-de-configuración-prinicipal-postfixsamba-ad-dc)
-  - [Fichero de configuración prinicipal Dovecot+Samba AD DC](#fichero-de-configuración-prinicipal-dovecotsamba-ad-dc)
-    - [Debian 9 Stretch Dovecot 2.2](#debian-9-stretch-dovecot-22)
-  - [Debian 10 Buster Dovecot 2.3](#debian-10-buster-dovecot-23)
-  - [Fichero de configuración prinicipal Roundcube+Samba AD DC](#fichero-de-configuración-prinicipal-roundcubesamba-ad-dc)
-  - [Ficheros de publicación web Roundcube](#ficheros-de-publicación-web-roundcube)
-    - [Servidor Web Nginx](#servidor-web-nginx)
-    - [Servidor Web Apache](#servidor-web-apache)
+  - [Ficheros de configuración prinicipal Postfix+Samba AD DC]
+    - [Configuración general](conf/mail/postfix/main.cf)
+    - [Configuración de servicios](conf/mail/postfix/master.cf)
+  - [Ficheros de configuración prinicipal Dovecot+Samba AD DC]
+    - [Debian 9 Stretch Dovecot 2.2](conf/mail/dovecot/dovecot-2.2.conf)
+    - [Debian 10 Buster Dovecot 2.3](conf/mail/dovecot/dovecot-2.3.conf)
+  - [Fichero de configuración prinicipal Roundcube+Samba AD DC](conf/www/roundcube/config.inc.php)
+  - [Ficheros de publicación web Roundcube]
+    - [Servidor Web Nginx](conf/www/nginx/roundcube)
+    - [Servidor Web Apache](conf/www/apache2/roundcube.conf)
 
 ## Consideraciones previas
 
