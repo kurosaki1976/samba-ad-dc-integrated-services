@@ -47,7 +47,7 @@
   - [Creación de registros DNS](#creación-de-registros-dns)
   - [Comprobaciones](#comprobaciones-5)
   - [Integración con Samba AD DC](#integración-con-samba-ad-dc-3)
-  - [Configuración del servicio](#configuración del servicio)
+  - [Configuración del servicio](#configuración-del-servicio)
   - [Compartir el roster de los usuarios](#compartir-el-roster-de-los-usuarios)
   - [Personalizar vCard de los usuarios](#personalizar-vcard-de-los-usuarios)
   - [Comprobaciones](#comprobaciones-6)
