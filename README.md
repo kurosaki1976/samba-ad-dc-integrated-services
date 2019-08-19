@@ -73,7 +73,7 @@
     - [Debian 10 Buster Squid 4.6](#debian-10-buster-squid-46)
   - [Fichero de configuración prinicipal eJabberd+Samba AD DC](#fichero-de-configuración-prinicipal-ejabberdsamba-ad-dc)
     - [Debian 9 Stretch eJabberd 16.09](#debian-9-stretch-ejabberd-1609)
-    - [Debian 10 Buster eJabberd 18.12](#debian-10-buster-ejabberd-1812)
+    - [Debian 10 Buster eJabberd 18.12](confs/xmpp/ejabberd/ejabberd-18.12.yml)
   - [Ficheros de configuración prinicipal Postfix+Samba AD DC](#ficheros-de-configuración-prinicipal-postfixsamba-ad-dc)
   - [Fichero de configuración prinicipal Dovecot+Samba AD DC](#fichero-de-configuración-prinicipal-dovecotsamba-ad-dc)
     - [Debian 9 Stretch Dovecot 2.2](#debian-9-stretch-dovecot-22)
