@@ -59,7 +59,7 @@
   - [Comprobaciones](#comprobaciones-7)
   - [Configuración del servicio Dovecot](#configuración-del-servicio-dovecot)
   - [Integrar con Samba AD DC](#integrar-con-samba-ad-dc)
-  - [Configuración del servicio Roundcube](#configuración-del-servicio-roundcube)
+  - [Configuración del servicio Webmail](#configuración-del-servicio-webmail)
 - [Comandos y herramientas útiles](#comandos-y-herramientas-útiles)
 - [Consideraciones finales](#consideraciones-finales)
 - [Referencias](#referencias)
@@ -1591,7 +1591,91 @@ Reiniciar el servicio.
 systemctl restart dovecot.service
 ```
 
-### Configuración del servicio Roundcube
+### Configuración del servicio Webmail
+
+## Roundcubemail
+
+Descomprimir el paquete en el sistema y asignar permisos.
+
+```
+tar -xzmf roundcubemail-*-complete.tar.gz -C /opt/
+mv /opt/roundcubemail-* /opt/roundcube
+ln -s /opt/roundcube/bin/{cleandb,gc}.sh /etc/cron.daily/
+chown -R root:www-data /opt/roundcube/
+find /opt/roundcube/ -type d \-exec chmod 0755 {} \;
+find /opt/roundcube/ -type f \-exec chmod 0644 {} \;
+chmod 0770 /opt/roundcube/{logs,temp}
+```
+
+## PostgreSQL
+
+Instalar gestor de base de datos PortgreSQL.
+
+```
+apt install postgresql
+```
+
+Crear base de datos para `roundcubemail`.
+
+```
+su - postgres
+psql
+\password postgres
+CREATE DATABASE roundcubemail WITH TEMPLATE template0 ENCODING 'UNICODE';
+\q
+```
+
+Inicializar la base de datos.
+
+```
+psql -h localhost -U postgres -W -f /opt/roundcube/SQL/postgres.initial.sql roundcubemail
+```
+
+## Nginx
+
+Instalar servidor web Nginx.
+
+```
+apt install nginx-full php-fpm php-pear php-mbstring php-intl php-ldap php-gd php-imagick php-pgsql
+```
+
+Definir zona horaria.
+
+```
+sed -i "s/^;date\.timezone =.*$/date\.timezone = 'America\/Havana'/;
+        s/^;cgi\.fix_pathinfo=.*$/cgi\.fix_pathinfo = 0/" \
+        /etc/php/7*/fpm/php.ini
+```
+
+Habilitar el servicio.
+
+```
+nano /etc/nginx/sites-available/roundcube
+ln -s /etc/nginx/sites-available/roundcube /etc/nginx/sites-enabled/
+```
+
+## Apache2
+
+Instalar servidor web Apache2.
+
+```
+apt install apache2 libapache2-mod-php php-pear php-mbstring php-intl php-ldap php-gd php-imagick php-pgsql
+```
+
+Definir zona horaria.
+
+```
+sed -i "s/^;date\.timezone =.*$/date\.timezone = 'America\/Havana'/;
+        s/^;cgi\.fix_pathinfo=.*$/cgi\.fix_pathinfo = 0/" \
+        /etc/php/7*/apache2/php.ini
+```
+
+Habilitar el servicio.
+
+```
+nano /etc/apache2/sites-available/roundcube.conf
+a2ensite roundcube.conf
+```
 
 ## Integración con Samba AD DC
 
