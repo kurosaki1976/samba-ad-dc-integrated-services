@@ -1591,9 +1591,9 @@ Reiniciar el servicio.
 systemctl restart dovecot.service
 ```
 
-### Configuración del servicio Webmail
+## Configuración del servicio Webmail
 
-## Roundcubemail
+### Roundcubemail
 
 Descomprimir el paquete en el sistema y asignar permisos.
 
@@ -1607,7 +1607,7 @@ find /opt/roundcube/ -type f \-exec chmod 0644 {} \;
 chmod 0770 /opt/roundcube/{logs,temp}
 ```
 
-## PostgreSQL
+### PostgreSQL
 
 Instalar gestor de base de datos PortgreSQL.
 
@@ -1631,7 +1631,7 @@ Inicializar la base de datos.
 psql -h localhost -U postgres -W -f /opt/roundcube/SQL/postgres.initial.sql roundcubemail
 ```
 
-## Nginx
+### Nginx
 
 Instalar servidor web Nginx.
 
@@ -1654,7 +1654,7 @@ nano /etc/nginx/sites-available/roundcube
 ln -s /etc/nginx/sites-available/roundcube /etc/nginx/sites-enabled/
 ```
 
-## Apache2
+### Apache2
 
 Instalar servidor web Apache2.
 
@@ -1677,7 +1677,7 @@ nano /etc/apache2/sites-available/roundcube.conf
 a2ensite roundcube.conf
 ```
 
-## Integración con Samba AD DC
+### Integración con Samba AD DC
 
 ```
 nano /opt/roundcube/config/config.inc.php
