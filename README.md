@@ -1757,7 +1757,7 @@ $config['ldap_public']["global_ldap_abook"] = array(
 * `dovecot -a` (muestra los parámetros configurados)
 * `nginx -t` (chequeo errores de configuración `nginx`)
 
-### Consideraciones finales
+## Consideraciones finales
 
 Todas las configuraciones expuestas en esta guía han sido probadas satisfactoriamente -si los pasos descritos se siguen a cabalidad-, en contenedores (CT) y máquinas virtuales (VM), gestionadas con Proxmox v5/v6.
 
