@@ -1609,7 +1609,7 @@ chmod 0770 /opt/roundcube/{logs,temp}
 
 #### PostgreSQL
 
-Instalar gestor de base de datos PortgreSQL.
+Instalar gestor de base de datos `PostgreSQL`.
 
 ```
 apt install postgresql
@@ -1633,7 +1633,7 @@ psql -h localhost -U postgres -W -f /opt/roundcube/SQL/postgres.initial.sql roun
 
 #### Nginx
 
-Instalar servidor web Nginx.
+Instalar servidor web `Nginx`.
 
 ```
 apt install nginx-full php-fpm php-pear php-mbstring php-intl php-ldap php-gd php-imagick php-pgsql
@@ -1647,16 +1647,99 @@ sed -i "s/^;date\.timezone =.*$/date\.timezone = 'America\/Havana'/;
         /etc/php/7*/fpm/php.ini
 ```
 
-Habilitar el servicio.
+Crear fichero de publicación web.
 
 ```
 nano /etc/nginx/sites-available/roundcube
+
+proxy_cache_path /tmp/cache keys_zone=cache:10m levels=1:2 inactive=600s max_size=100m;
+server {
+    listen 80;
+    listen 443 ssl http2;
+    root /opt/roundcube;
+    server_name webmail.example.tld;
+    if ($scheme = http) {
+        return 301 https://$server_name$request_uri;
+    }
+    ssl_certificate /etc/ssl/certs/exampleMail.crt;
+    ssl_certificate_key /etc/ssl/private/exampleMail.key;
+    ssl_dhparam /etc/ssl/dh2048.pem;
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+    ssl_prefer_server_ciphers on;
+    ssl_ciphers "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH";
+    ssl_ecdh_curve secp384r1;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_tickets off;
+    ssl_stapling_verify on;
+    ssi on;
+    resolver 127.0.0.1 valid=300s;
+    resolver_timeout 5s;
+    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload";
+    add_header X-Content-Type-Options nosniff;
+    proxy_cache cache;
+    proxy_cache_valid 200 1s;
+    location ~ [^/]\.php(/|$) {
+        fastcgi_split_path_info ^(.+?\.php)(/.*)$;
+        if (!-f $document_root$fastcgi_script_name) {
+            return 404;
+        }
+        fastcgi_param HTTP_PROXY "";
+        fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
+        include snippets/fastcgi-php.conf;
+    }
+    location ~ /\. {
+        deny all;
+    }
+    location = /favicon.ico {
+        log_not_found off;
+        access_log off;
+    }
+    location = /robots.txt {
+        access_log off;
+        log_not_found off;
+    }
+    location / {
+        index index.php;
+        location ~ ^/favicon.ico$ {
+            root /opt/roundcube/skins/larry/images;
+            log_not_found off;
+            access_log off;
+            expires max;
+        }
+        location ~ ^/(bin|SQL|config|temp|logs)/ {
+             deny all;
+        }
+        location ~ ^/(README|INSTALL|LICENSE|CHANGELOG|UPGRADING)$ {
+            deny all;
+        }
+        location ~ ^/(.+\.md)$ {
+            deny all;
+        }
+        location ~ ^/program/resources/(.+\.pdf)$ {
+            deny all;
+            log_not_found off;
+            access_log off;
+        }
+        location ~ ^/\. {
+            deny all;
+            access_log off;
+            log_not_found off;
+        }
+    }
+    access_log /var/log/nginx/roundcube_access.log;
+    error_log /var/log/nginx/roundcube_error.log;
+}
+```
+
+Habilitar el servicio.
+
+```
 ln -s /etc/nginx/sites-available/roundcube /etc/nginx/sites-enabled/
 ```
 
 #### Apache2
 
-Instalar servidor web Apache2.
+Instalar servidor web `Apache2`.
 
 ```
 apt install apache2 libapache2-mod-php php-pear php-mbstring php-intl php-ldap php-gd php-imagick php-pgsql
@@ -1670,10 +1753,58 @@ sed -i "s/^;date\.timezone =.*$/date\.timezone = 'America\/Havana'/;
         /etc/php/7*/apache2/php.ini
 ```
 
-Habilitar el servicio.
+Crear fichero de publicación web.
 
 ```
 nano /etc/apache2/sites-available/roundcube.conf
+
+<VirtualHost *:80>
+    RewriteEngine on
+    RewriteCond %{HTTPS} =off
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [QSA,L,R=301]
+</VirtualHost>
+
+<IfModule mod_ssl.c>
+    <VirtualHost *:443>
+        ServerName webmail.example.tld
+        ServerAdmin webmaster@example.tld
+        DocumentRoot /opt/roundcube
+        DirectoryIndex index.php
+        ErrorLog ${APACHE_LOG_DIR}/roundcube_error.log
+        CustomLog ${APACHE_LOG_DIR}/roundcube_access.log combined
+        SSLEngine on
+        SSLCertificateFile /etc/ssl/certs/exampleMail.crt
+        SSLCertificateKeyFile /etc/ssl/private/exampleMail.key
+        <FilesMatch "\.(cgi|shtml|phtml|php)$">
+            SSLOptions +StdEnvVars
+        </FilesMatch>
+        <Directory /usr/lib/cgi-bin>
+            SSLOptions +StdEnvVars
+        </Directory>
+        BrowserMatch "MSIE [2-6]" nokeepalive ssl-unclean-shutdown downgrade-1.0 force-response-1.0
+        BrowserMatch "MSIE [17-9]" ssl-unclean-shutdown
+        <Directory /opt/roundcube>
+            Options +FollowSymlinks
+            AllowOverride All
+            Require all granted
+            SetEnv HOME /opt/roundcube
+            SetEnv HTTP_HOME /opt/roundcube
+            <IfModule mod_dav.c>
+                Dav off
+            </IfModule>
+        </Directory>
+        <Directory /opt/roundcube/program/resources>
+            <FilesMatch "\.(pdf)$">
+                Require all denied
+            </FilesMatch>
+        </Directory>
+    </VirtualHost>
+</IfModule>
+```
+
+Habilitar el servicio.
+
+```
 a2ensite roundcube.conf
 ```
 
@@ -1681,6 +1812,9 @@ a2ensite roundcube.conf
 
 ```
 nano /opt/roundcube/config/config.inc.php
+
+// Database
+$config['db_dsnw'] = 'pgsql://postgres:<contraseña-usuario-postgres>@localhost/roundcubemail';
 
 // Samba AD DC Address Book
 $config['autocomplete_addressbooks'] = array(
