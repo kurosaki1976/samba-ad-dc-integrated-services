@@ -58,7 +58,7 @@
   - [Configuración de Postfix](#configuración-de-postfix)
     - [Comprobaciones](#comprobaciones-7)
   - [Configuración del servicio Dovecot](#configuración-del-servicio-dovecot)
-    - [Integración con Samba AD DC](#integracion-con-samba-ad-dc)
+    - [Integración con Samba AD DC](#integración-con-samba-ad-dc-5)
   - [Configuración del servicio Webmail](#configuración-del-servicio-webmail)
 - [Comandos y herramientas útiles](#comandos-y-herramientas-útiles)
 - [Consideraciones finales](#consideraciones-finales)
@@ -1495,7 +1495,7 @@ dovecot unix - n n - - pipe
     flags=DRhu user=vmail:vmail argv=/usr/lib/dovecot/dovecot-lda -f ${sender} -d ${recipient}
 ```
 
-### Comprobaciones
+#### Comprobaciones
 
 ```
 postmap -q leonard@example.tld ldap:/etc/postfix/virtual_sender_login_maps.cf
@@ -1550,7 +1550,7 @@ exit 0
 chmod +x /usr/local/bin/quota-warning
 ```
 
-### Integración con Samba AD DC
+#### Integración con Samba AD DC
 
 ```
 nano /etc/dovecot/dovecot.conf
