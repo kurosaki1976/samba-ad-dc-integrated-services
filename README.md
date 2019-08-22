@@ -80,10 +80,10 @@
   - [Ficheros de configuración prinicipal Dovecot+Samba AD DC]
     - [Debian 9 Stretch Dovecot 2.2](confs/mail/dovecot/dovecot-2.2.conf)
     - [Debian 10 Buster Dovecot 2.3](confs/mail/dovecot/dovecot-2.3.conf)
-  - [Fichero de configuración prinicipal Roundcube+Samba AD DC](confs/www/roundcube/config.inc.php)
+  - [Fichero de configuración prinicipal Roundcube+Samba AD DC](confs/mail/www/roundcube/config.inc.php)
   - [Ficheros de publicación web Roundcube]
-    - [Servidor Web Nginx](confs/www/nginx/roundcube)
-    - [Servidor Web Apache](confs/www/apache2/roundcube.conf)
+    - [Servidor Web Nginx](confs/mail/www/nginx/roundcube)
+    - [Servidor Web Apache](confs/mail/www/apache2/roundcube.conf)
 
 ## Consideraciones previas
 
