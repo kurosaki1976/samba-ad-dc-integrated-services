@@ -58,7 +58,7 @@
   - [Configuración de Postfix](#configuración-de-postfix)
     - [Comprobaciones](#comprobaciones-7)
   - [Configuración del servicio Dovecot](#configuración-del-servicio-dovecot)
-    - [Integrar con Samba AD DC](#integrar-con-samba-ad-dc)
+    - [Integración con Samba AD DC](#integracion-con-samba-ad-dc)
   - [Configuración del servicio Webmail](#configuración-del-servicio-webmail)
 - [Comandos y herramientas útiles](#comandos-y-herramientas-útiles)
 - [Consideraciones finales](#consideraciones-finales)
