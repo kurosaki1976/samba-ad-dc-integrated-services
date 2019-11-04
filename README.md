@@ -998,7 +998,7 @@ nano /etc/ejabberd/ejabberd.yml
 
 Para Debian 9 Stretch.
 
-```
+```yml
 hosts:
   - "example.tld"
 listen:
