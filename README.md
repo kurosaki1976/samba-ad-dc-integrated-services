@@ -112,7 +112,7 @@ Tendiendo en cuenta esto, se pautan las siguientes premisas:
 
 ### Samba AD DC Server
 
-```
+```bash
 nano /etc/network/interfaces
 
 auto lo
@@ -126,14 +126,14 @@ iface enp0s3 inet static
     dns-search example.tld
 ```
 
-```
+```bash
 nano /etc/hosts
 
 127.0.0.1       localhost
 192.168.0.1     dc.example.tld      dc
 ```
 
-```
+```bash
 nano /etc/resolv.conf
 
 domain example.tld
@@ -142,7 +142,7 @@ nameserver 127.0.0.1
 
 ### Squid Proxy Server
 
-```
+```bash
 nano /etc/network/interfaces
 
 auto lo
@@ -156,14 +156,14 @@ iface enp0s3 inet static
     dns-search example.tld
 ```
 
-```
+```bash
 nano /etc/hosts
 
 127.0.0.1       localhost
 192.168.0.2     proxy.example.tld      proxy
 ```
 
-```
+```bash
 nano /etc/resolv.conf
 
 domain example.tld
@@ -172,7 +172,7 @@ nameserver 192.168.0.1
 
 ### eJabberd XMPP Server
 
-```
+```bash
 nano /etc/network/interfaces
 
 auto lo
@@ -186,14 +186,14 @@ iface enp0s3 inet static
     dns-search example.tld
 ```
 
-```
+```bash
 nano /etc/hosts
 
 127.0.0.1       localhost
 192.168.0.3     jb.example.tld      jb
 ```
 
-```
+```bash
 nano /etc/resolv.conf
 
 domain example.tld
@@ -202,7 +202,7 @@ nameserver 192.168.0.1
 
 ### Postfix/Dovecot/Roundcube Mail Server
 
-```
+```bash
 nano /etc/network/interfaces
 
 auto lo
@@ -216,14 +216,14 @@ iface enp0s3 inet static
     dns-search example.tld
 ```
 
-```
+```bash
 nano /etc/hosts
 
 127.0.0.1       localhost
 192.168.0.4     mail.example.tld      mail
 ```
 
-```
+```bash
 nano /etc/resolv.conf
 
 domain example.tld
@@ -234,54 +234,54 @@ nameserver 192.168.0.1
 
 Utilizar el cliente NTP de systemd.
 
-```
+```bash
 timedatectl set-ntp true
 ```
 
 Definir el servidor de tiempo superior.
 
-```
+```bash
 mv /etc/systemd/timesyncd.conf{,.org}
 nano /etc/systemd/timesyncd.conf
 ```
 
 ### Samba AD DC Server
 
-```
+```bash
 [Time]
 NTP=ntp.tld
 ```
 
 ### Squid Proxy Server
 
-```
+```bash
 [Time]
 NTP=dc.example.tld
 ```
 
 ### eJabberd XMPP Server
 
-```
+```bash
 [Time]
 NTP=dc.example.tld
 ```
 
 ### Postfix/Dovecot/Roundcube Mail Server
 
-```
+```bash
 [Time]
 NTP=dc.example.tld
 ```
 
 Reiniciar el servicio cliente NTP de systemd.
 
-```
+```bash
 systemctl restart systemd-timesyncd
 ```
 
 Verificar el estado de la sincronización.
 
-```
+```bash
 timedatectl status
 journalctl --since -1h -u systemd-timesyncd
 ```
@@ -294,7 +294,7 @@ Las distribucións de Debian 9/10 cuentan en sus repositorios de paquetes con la
 
 Deshabilitar la interacción de configuración y proceder con la instalación de paquetes.
 
-```
+```bash
 export DEBIAN_FRONTEND=noninteractive
 apt install samba krb5-user winbind libnss-winbind net-tools bind9 dnsutils ntpdate ntp
 unset DEBIAN_FRONTEND
@@ -304,14 +304,14 @@ unset DEBIAN_FRONTEND
 
 Detener y deshabilitar todos los servicios relacionados con Samba.
 
-```
+```bash
 systemctl stop samba-ad-dc smbd nmbd winbind bind9
 systemctl disable samba-ad-dc smbd nmbd winbind bind9
 ```
 
 Opcionalmente se puede hacer una copia del archivo de configuración inicial de Samba ya que se sobrescribe durante el aprovisionamiento.
 
-```
+```bash
 mv /etc/samba/smb.conf{,.org}
 ```
 
@@ -319,7 +319,7 @@ mv /etc/samba/smb.conf{,.org}
 
 Modo interactivo:
 
-```
+```bash
 samba-tool domain provision --use-rfc2307 --interactive
 ```
 
@@ -327,7 +327,7 @@ Aceptar los valores por defecto a menos que se desee lo contrario.
 
 Modo no interactivo:
 
-```
+```bash
 samba-tool domain provision \
     --server-role=dc \
     --use-rfc2307 \
@@ -340,7 +340,7 @@ samba-tool domain provision \
 
 Editar el fichero `/etc/samba/smb.conf` resultante.
 
-```
+```bash
 nano /etc/samba/smb.conf
 
 [global]
@@ -374,12 +374,12 @@ Durante el aprovisionamiento, Samba crea un archivo de configuración con los va
 
 Utilizar el fichero configuración de Kerberos generada durante el aprovisionamiento y editarlo.
 
-```
+```bash
 mv /etc/krb5.conf{,.org}
 ln -s /var/lib/samba/private/krb5.conf /etc/krb5.conf
 ```
 
-```
+```bash
 nano /etc/krb5.conf
 
 [libdefaults]
@@ -400,7 +400,7 @@ nano /etc/krb5.conf
 
 Iniciar, verificar el estado y habilitar el servicio de Samba AD DC.
 
-```
+```bash
 systemctl unmask samba-ad-dc
 systemctl start samba-ad-dc
 systemctl status samba-ad-dc
@@ -409,7 +409,7 @@ systemctl enable samba-ad-dc
 
 Evitar que la cuenta del usuario `Administrator` expire.
 
-```
+```bash
 samba-tool user setexpiry Administrator --noexpiry
 ```
 
@@ -419,13 +419,13 @@ Reiniciar el servidor.
 
 Comprobar el nivel del dominio.
 
-```
+```bash
 samba-tool domain level show
 ```
 
 Comprobar la resolución del nombre de domino, `FQDN` y `hostname` por la dirección IP estática.
 
-```
+```bash
 ping -c4 example.tld
 ping -c4 dc.example.tld
 ping -c4 dc
@@ -433,13 +433,13 @@ ping -c4 dc
 
 Solicitar ticket de Kerberos.
 
-```
+```bash
 kinit Administrator@EXAMPLE.TLD
 ```
 
 Listar tickets de Kerberos en caché.
 
-```
+```bash
 klist
 ```
 
@@ -451,7 +451,7 @@ Durante el aprovisionamiento se utilizó el `dns-backend=SAMBA_INTERNAL`, que pr
 
 Editar el fichero `/etc/samba/smb.conf` y en la sección `[global]` añadir las directivas:
 
-```
+```bash
 server services = -dns
 nsupdate command = /usr/bin/nsupdate -g
 ```
@@ -462,11 +462,11 @@ Comentar ó eliminar la directiva `dns forwarder = 127.0.0.1`.
 
 Definir Bind9 como dns-backend.
 
-```
+```bash
 mv /etc/bind/named.conf.local{,.org}
 ```
 
-```
+```bash
 nano /etc/bind/named.conf.local
 
 dlz "samba4" {
@@ -474,13 +474,13 @@ dlz "samba4" {
 };
 ```
 
-```
+```bash
 samba_upgradedns --dns-backend=BIND9_DLZ
 chown bind /var/lib/samba/private/dns.keytab
 mv /etc/bind/named.conf.options{,.org}
 ```
 
-```
+```bash
 nano /etc/bind/named.conf.options
 
 options {
@@ -496,18 +496,18 @@ options {
 };
 ```
 
-```
+```bash
 mv /etc/default/bind9{,.org}
 ```
 
-```
+```bash
 nano /etc/default/bind9
 
 RESOLVCONF=no
 OPTIONS="-4 -u bind"
 ```
 
-```
+```bash
 nano /var/lib/samba/private/named.conf.update
 
 grant *.example.tld wildcard *.0.168.192.in-addr.arpa. PTR TXT;
@@ -516,14 +516,14 @@ grant local-ddns zonesub any;
 
 Reiniciar los servicios.
 
-```
+```bash
 systemctl restart samba-ad-dc bind9
 systemctl enable bind9
 ```
 
 ### Creación de zona inversa y registro PTR del servidor
 
-```
+```bash
 samba-tool dns zonecreate localhost 0.168.192.in-addr.arpa -U 'administrator'%'P@s$w0rd.123'
 samba-tool dns add localhost 0.168.192.in-addr.arpa 1 PTR 'dc.example.tld.' -U 'administrator'%'P@s$w0rd.123'
 ```
@@ -532,14 +532,14 @@ samba-tool dns add localhost 0.168.192.in-addr.arpa 1 PTR 'dc.example.tld.' -U '
 
 Comprobar correcta ejecución del servidor Bind9 DNS.
 
-```
+```bash
 netstat -tapn | grep 53
 netstat -lptun
 ```
 
 Comprobar registros DNS necesarios para el funcionamiento correcto de Samba AD DC.
 
-```
+```bash
 dig example.tld
 host -t A dc.example.tld
 host 192.168.0.1
@@ -549,7 +549,7 @@ host -t SRV _ldap._tcp.example.tld
 
 Comprobar actualización automática de los registros DNS.
 
-```
+```bash
 samba-tool dns query 127.0.0.1 example.tld @ ALL -U 'administrator'%'P@s$w0rd.123'
 samba_dnsupdate --verbose --all-names
 ```
@@ -560,11 +560,11 @@ El servidor Samba AD DC actuará como servidor de tiempo (Network Time Protocol 
 
 ### Integración con Samba AD DC
 
-```
+```bash
 mv /etc/ntp.conf{,.org}
 ```
 
-```
+```bash
 nano /etc/ntp.conf
 
 driftfile /var/lib/ntp/ntp.drift
@@ -589,20 +589,20 @@ panic 0
 
 Establecer permisos.
 
-```
+```bash
 chgrp ntp /var/lib/samba/ntp_signd
 usermod -a -G staff ntp
 ```
 
 Reiniciar el servicio.
 
-```
+```bash
 systemctl restart ntp
 ```
 
 ### Comprobaciones
 
-```
+```bash
 systemctl status ntp
 ntpdate -vqd ntp.tld
 ntpq -p
@@ -616,7 +616,7 @@ Las unidades organizativas son subdivisiones jerárquicas que agrupan entidades,
 
 Crear nueva Unidad Organizativa.
 
-```
+```bash
 samba-tool ou create 'OU=ACME,DC=example,DC=tld' --description='EXAMPLE.TLD Main Organizational Unit'
 ```
 
@@ -624,7 +624,7 @@ samba-tool ou create 'OU=ACME,DC=example,DC=tld' --description='EXAMPLE.TLD Main
 
 Crear nuevo Grupo de Usuarios perteneciente a la OU `ACME`.
 
-```
+```bash
 samba-tool group add IT --groupou='OU=ACME' --description='IT Technical Support Group'
 ```
 
@@ -632,7 +632,7 @@ samba-tool group add IT --groupou='OU=ACME' --description='IT Technical Support 
 
 Crear nueva Cuenta de Usuario perteneciente a la OU `ACME`.
 
-```
+```bash
 samba-tool user create 'john.doe' 'P@s$w0rd.456' \
     --userou='OU=ACME' \
     --surname='Doe' \
@@ -647,13 +647,13 @@ samba-tool user create 'john.doe' 'P@s$w0rd.456' \
 
 Añadir nuevo usuario al grupo `IT`.
 
-```
+```bash
 samba-tool group addmembers 'IT' john.doe
 ```
 
 Añadir nuevo usuario a los grupos administrativos del AD DC.
 
-```
+```bash
 samba-tool group addmembers 'Administrators' john.doe
 samba-tool group addmembers 'Domain Admins' john.doe
 samba-tool group addmembers 'Schema Admins' john.doe
@@ -667,19 +667,19 @@ En los sistemas operativos Windows, una Política de Grupo (Group Policy Object 
 
 Crear Política de Grupo para contraseñas.
 
-```
+```bash
 samba-tool gpo create 'ACME Domain Password Policy' -U 'administrator'%'P@s$w0rd.123'
 ```
 
 Vincular política creada a Unidad Organizativa.
 
-```
+```bash
 samba-tool gpo setlink 'OU=ACME,DC=example,DC=tld' {D8D44688-6D73-4850-8373-2B2B7294483A} -U 'administrator'%'P@s$w0rd.123'
 ```
 
 ### Comprobaciones
 
-```
+```bash
 samba-tool gpo listall
 samba-tool gpo listcontainers {D8D44688-6D73-4850-8373-2B2B7294483A} -U 'administrator'%'P@s$w0rd.123'
 samba-tool gpo getlink 'OU=ACME,DC=example,DC=tld' -U 'administrator'%'P@s$w0rd.123'
@@ -691,20 +691,20 @@ samba-tool gpo getlink 'OU=ACME,DC=example,DC=tld' -U 'administrator'%'P@s$w0rd.
 
 Crear registros DNS.
 
-```
+```bash
 samba-tool dns add localhost example.tld proxy A '192.168.0.2' -U 'administrator'%'P@s$w0rd.123'
 samba-tool dns add localhost 0.168.192.in-addr.arpa 2 PTR 'proxy.example.tld.' -U 'administrator'%'P@s$w0rd.123'
 ```
 
 Crear nueva Unidad Organizativa `Proxy` para grupos de navegación, perteneciente a `ACME`.
 
-```
+```bash
 samba-tool ou create 'OU=Proxy,OU=ACME,DC=example,DC=tld' --description='Proxy Groups Organizational Unit'
 ```
 
 Crear nuevos grupos de navegación pertenecientes a la OU `Proxy`.
 
-```
+```bash
 samba-tool group add Intranet --groupou='OU=Proxy,OU=ACME' --description='.CU Access Group'
 samba-tool group add Internet --groupou='OU=Proxy,OU=ACME' --description='Internet Access Group'
 samba-tool group add Unrestricted --groupou='OU=Proxy,OU=ACME' --description='Unrestricted Access Group'
@@ -712,7 +712,7 @@ samba-tool group add Unrestricted --groupou='OU=Proxy,OU=ACME' --description='Un
 
 Crear nuevos usuarios de navegación pertenecientes a la OU `ACME`.
 
-```
+```bash
 samba-tool user create 'sheldon' 'Amy*123' \
     --userou='OU=ACME' \
     --surname='Cooper' \
@@ -723,7 +723,7 @@ samba-tool user create 'sheldon' 'Amy*123' \
     --mail='sheldon@example.tld'
 ```
 
-```
+```bash
 samba-tool user create 'leonard' 'Penny*456' \
     --userou='OU=ACME' \
     --surname='Hofstadter' \
@@ -734,7 +734,7 @@ samba-tool user create 'leonard' 'Penny*456' \
     --mail='leonard@example.tld'
 ```
 
-```
+```bash
 samba-tool user create 'rajesh' 'Howard*789' \
     --userou='OU=ACME' \
     --surname='Koothrappali' \
@@ -747,7 +747,7 @@ samba-tool user create 'rajesh' 'Howard*789' \
 
 Añadir usuarios a los grupos creados.
 
-```
+```bash
 samba-tool group addmembers 'Intranet' sheldon
 samba-tool group addmembers 'Internet' leonard
 samba-tool group addmembers 'Unrestricted' rajesh
@@ -755,7 +755,7 @@ samba-tool group addmembers 'Unrestricted' rajesh
 
 ### Instalación de paquetes necesarios
 
-```
+```bash
 export DEBIAN_FRONTEND=noninteractive
 apt install squid krb5-user msktutil libsasl2-modules-gssapi-mit
 unset DEBIAN_FRONTEND
@@ -763,7 +763,7 @@ unset DEBIAN_FRONTEND
 
 Detener el servicio y remplazar el fichero de configuración por defecto de Squid.
 
-```
+```bash
 systemctl stop squid
 mv /etc/squid/squid.conf{,.org}
 nano /etc/squid/squid.conf
@@ -771,11 +771,11 @@ nano /etc/squid/squid.conf
 
 Configuración de Kerberos.
 
-```
+```bash
 mv /etc/krb5.conf{,.org}
 ```
 
-```
+```bash
 nano /etc/krb5.conf
 
 [libdefaults]
@@ -800,7 +800,7 @@ nano /etc/krb5.conf
 
 Generar archivo keytab.
 
-```
+```bash
 kinit Administrator@EXAMPLE.TLD
 msktutil -c -b "CN=Computers" \
     -s HTTP/proxy.example.tld \
@@ -814,27 +814,27 @@ msktutil -c -b "CN=Computers" \
 
 Establecer los permisos del archivo keytab.
 
-```
+```bash
 chown root:proxy /etc/krb5.keytab
 chmod 640 /etc/krb5.keytab
 ```
 
 Comprobar que Kerberos funciona.
 
-```
+```bash
 kinit -k HTTP/proxy.example.tld
 klist
 ```
 
 Comprobar que la cuenta de host se actualice correctamente.
 
-```
+```bash
 msktutil --auto-update --verbose --computer-name proxy
 ```
 
 Agregar en crontab.
 
-```
+```bash
 nano /etc/contrab
 
 59 23 * * * root msktutil --auto-update --verbose --computer-name proxy > /dev/null 2>&1
@@ -846,7 +846,7 @@ Crear nueva Cuenta de Usuario para el servicio `squid`.
 
 Esta cuenta sería usada para propiciar la autenticación básica LDAP en caso de fallar Kerberos ó para uso de gestores de descargas no compatibles con Kerberos ó en aquellas estaciones que no están unidas al dominio.
 
-```
+```bash
 samba-tool user create 'squid3' 'P@s$w0rd.789' \
     --surname='Proxy Service' \
     --given-name='Squid3' \
@@ -857,7 +857,7 @@ samba-tool user setexpiry squid3 --noexpiry
 
 Editar el fichero `/etc/squid/squid.conf` y agregar los métodos de autenticación.
 
-```
+```bash
 nano /etc/squid/squid.conf
 
 # OPTIONS FOR AUTHENTICATION
@@ -910,19 +910,19 @@ http_access deny all
 
 Usando autenticación Kerberos.
 
-```
+```bash
 /usr/lib/squid/ext_kerberos_ldap_group_acl -a -g Internet -D EXAMPLE.TLD
 ```
 
 Usando autenticación básica LDAP.
 
-```
+```bash
 /usr/lib/squid/basic_ldap_auth -R -b "dc=example,dc=tld" -D squid3@example.tld -w "P@s$w0rd.789" -f sAMAccountName=%s -h dc.example.tld
 ```
 
 Membresía de grupos LDAP.
 
-```
+```bash
 /usr/lib/squid/ext_ldap_group_acl -R -K -S -b "dc=example,dc=tld" \
     -D squid3@example.tld -w "P@s$w0rd.789" \
     -f "(&(objectClass=person)(sAMAccountName=%v)\
@@ -932,7 +932,7 @@ Membresía de grupos LDAP.
 
 Analizando trazas de navegación.
 
-```
+```bash
 tail -fn100 /var/log/squid/access.log
 ```
 
@@ -940,19 +940,19 @@ tail -fn100 /var/log/squid/access.log
 
 ### Instalación de paquetes necesarios
 
-```
+```bash
 apt install ejabberd ejabberd-contrib erlang-eldap
 ```
 
 Crear certificado de seguridad TLS/SSL.
 
-```
+```bash
 mv /etc/ejabberd/ejabberd.pem{,.org}
 ```
 
 Para Debian 9 Stretch.
 
-```
+```bash
 openssl req -x509 -nodes -days 3650 -sha512 \
     -subj "/C=CU/ST=Provincia/L=Ciudad/O=EXAMPLE TLD/OU=IT/CN=example.tld/emailAddress=postmaster@example.tld/" \
     -reqexts SAN -extensions SAN \-config <(cat /etc/ssl/openssl.cnf \
@@ -967,7 +967,7 @@ openssl dhparam -out /etc/ssl/dh2048.pem 2048
 
 Para Debian 10 Buster.
 
-```
+```bash
 openssl req -x509 -nodes -days 3650 -sha512 \
     -subj "/C=CU/ST=Provincia/L=Ciudad/O=EXAMPLE TLD/OU=IT/CN=example.tld/emailAddress=postmaster@example.tld/" \
     -addext "subjectAltName = DNS:jb.example.tld,DNS:conference.example.tld,DNS:echo.example.tld,DNS:pubsub.example.tld,IP:192.168.0.3" \
@@ -977,7 +977,7 @@ openssl req -x509 -nodes -days 3650 -sha512 \
 openssl dhparam -out /etc/ssl/dh2048.pem 2048
 ```
 
-```
+```bash
 cat /tmp/{exampleJabber.crt,exampleJabber.key} > /etc/ejabberd/ejabberd.pem
 chmod 0640 /etc/ejabberd/ejabberd.pem
 chown root:ejabberd /etc/ejabberd/ejabberd.pem
@@ -985,13 +985,13 @@ chown root:ejabberd /etc/ejabberd/ejabberd.pem
 
 Comprobar correcta creación del certificado.
 
-```
+```bash
 openssl x509 -in /etc/ejabberd/ejabberd.pem -text -noout
 ```
 
 Definir el nombre de dominio del servidor `eJabberd` y parámetros de seguridad TLS/SSL en la comunicación c2s (cliente-servidor).
 
-```
+```bash
 cp /etc/ejabberd/ejabberd.yml{,.org}
 nano /etc/ejabberd/ejabberd.yml
 ```
@@ -1032,7 +1032,7 @@ disable_sasl_mechanisms: "digest-md5"
 
 Para Debian 10 Buster.
 
-```
+```yml
 hosts:
   - "example.tld"
 certfiles:
@@ -1069,7 +1069,7 @@ disable_sasl_mechanisms:
 
 ### Creación de registros DNS
 
-```
+```bash
 samba-tool dns add localhost example.tld jb A '192.168.0.3' -U 'administrator'%'P@s$w0rd.123'
 samba-tool dns add localhost 0.168.192.in-addr.arpa 3 PTR 'jb.example.tld.' -U 'administrator'%'P@s$w0rd.123'
 samba-tool dns add localhost example.tld conference CNAME 'jb.example.tld' -U 'administrator'%'P@s$w0rd.123'
@@ -1081,7 +1081,7 @@ samba-tool dns add localhost example.tld _xmpp-server._tcp SRV 'jb.example.tld 5
 
 ### Comprobaciones
 
-```
+```bash
 host -t SRV _xmpp-server._tcp.example.tld
 host -t SRV _xmpp-client._tcp.example.tld
 host -t A jb.example.tld
@@ -1093,7 +1093,7 @@ dig -t SRV @example.tld _xmpp-server._tcp.example.tld
 
 Crear nueva Cuenta de Usuario para el servicio `ejabberd`.
 
-```
+```bash
 samba-tool user create 'ejabberd' 'P@s$w0rd.012' \
     --surname='XMPP Service' \
     --given-name='eJabberd' \
@@ -1106,9 +1106,10 @@ samba-tool user setexpiry ejabberd --noexpiry
 
 Definir cuenta de usuario con acceso administrativo al servicio.
 
-```
+```bash
 nano /etc/ejabberd/ejabberd.yml
-
+```
+```yml
 acl:
   admin:
     user:
@@ -1117,7 +1118,7 @@ acl:
 
 Definir método de autenticación.
 
-```
+```yml
 auth_password_format: scram
 fqdn: "jb.example.tld"
 auth_method: ldap
@@ -1136,7 +1137,7 @@ ldap_filter: "(&(objectClass=person)(!(userAccountControl:1.2.840.113556.1.4.803
 
 Editar el fichero `/etc/ejabberd/ejabberd.yml` y añadir en la sección `MODULES`, debajo de la opción `mod_roster: {}`, el siguiente contenido:
 
-```
+```yml
 mod_shared_roster_ldap:
   ldap_base: "OU=ACME,DC=example,DC=tld"
   ldap_groupattr: "department"
@@ -1154,7 +1155,7 @@ Editar el fichero `/etc/ejabberd/ejabberd.yml` y añadir en la sección `MODULES
 
 Para Debian 9 Stretch.
 
-```
+```yml
 mod_vcard_ldap:
   ldap_uids: {"sAMAccountName": "%u"}
   matches: infinity
@@ -1181,7 +1182,7 @@ mod_vcard_ldap:
 
 Para Debian 10 Buster.
 
-```
+```yml
 mod_vcard:
   db_type: ldap
   ldap_uids: {"sAMAccountName": "%u"}
@@ -1209,7 +1210,7 @@ mod_vcard:
 
 Reiniciar el servicio y comprobar su correcto funcionamiento.
 
-```
+```bash
 systemctl restart ejabberd
 systemctl status ejabberd
 ```
@@ -1218,7 +1219,7 @@ systemctl status ejabberd
 
 Acceder a la web admnistrativa que provee eJabberd desde un navegador, loguearse con un usuario administrador y revisar los parámetros de configuración establecidos.
 
-```
+```bash
 https://jb.example.tld:5280/admin
 ```
 
@@ -1226,7 +1227,7 @@ Vale destacar que una vez intregado el servicio al AD DC, no es necesario realiz
 
 Iniciar sesión desde cualquier cliente jabber (Spark, Gajim, Pidgin) que soporte el protocolo XMPP y en la consola del servidor ejecutar:
 
-```
+```bash
 tail -fn100 /var/log/ejabberd/ejabberd.log
 ```
 
@@ -1234,7 +1235,7 @@ tail -fn100 /var/log/ejabberd/ejabberd.log
 
 ### Instalación de paquetes necesarios
 
-```
+```bash
 export DEBIAN_FRONTEND=noninteractive
 apt install postfix-pcre postfix-ldap dovecot-core dovecot-ldap dovecot-pop3d dovecot-imapd dovecot-lmtpd ldap-utils mailutils
 unset DEBIAN_FRONTEND
@@ -1244,7 +1245,7 @@ unset DEBIAN_FRONTEND
 
 Crear grupo y usuario locales para el almacén de buzones `vmail`.
 
-```
+```bash
 groupadd -g 5000 vmail
 useradd -m -g 5000 -u 5000 -d /var/vmail -s /usr/sbin/nologin -c "Virtual Mailbox Storage" vmail
 ```
@@ -1253,7 +1254,7 @@ Crear certificado de seguridad TLS/SSL.
 
 Para Debian 9 Stretch.
 
-```
+```bash
 openssl req -x509 -nodes -days 3650 -sha512 \
     -subj "/C=CU/ST=Provincia/L=Ciudad/O=EXAMPLE TLD/OU=IT/CN=mail.example.tld/emailAddress=postmaster@example.tld/" \
     -reqexts SAN -extensions SAN \-config <(cat /etc/ssl/openssl.cnf \
@@ -1267,7 +1268,7 @@ openssl req -x509 -nodes -days 3650 -sha512 \
 
 Para Debian 10 Buster.
 
-```
+```bash
 openssl req -x509 -nodes -days 3650 -sha512 \
     -subj "/C=CU/ST=Provincia/L=Ciudad/O=EXAMPLE TLD/OU=IT/CN=mail.example.tld/emailAddress=postmaster@example.tld/" \
     -addext "subjectAltName = DNS:smtp.example.tld,\
@@ -1278,7 +1279,7 @@ openssl req -x509 -nodes -days 3650 -sha512 \
     -keyout /etc/ssl/private/exampleMail.key
 ```
 
-```
+```bash
 openssl dhparam -out /etc/ssl/dh2048.pem 2048
 chmod 0444 /etc/ssl/certs/exampleMail.crt
 chmod 0400 /etc/ssl/private/exampleMail.key
@@ -1286,7 +1287,7 @@ chmod 0400 /etc/ssl/private/exampleMail.key
 
 Comprobar correcta creación del certificado.
 
-```
+```bash
 openssl x509 -in /etc/ssl/certs/exampleMail.crt -text -noout
 ```
 
@@ -1294,7 +1295,7 @@ openssl x509 -in /etc/ssl/certs/exampleMail.crt -text -noout
 
 Crear nueva Cuenta de Usuario del Dominio para el servicio `postfix`.
 
-```
+```bash
 samba-tool user create 'postfix' 'P@s$w0rd.345' \
     --surname='Dovecot Roundcube' \
     --given-name='Postfix' \
@@ -1305,7 +1306,7 @@ samba-tool user setexpiry postfix --noexpiry
 
 Crear buzón de correo electrónico para almacén de mensajes.
 
-```
+```bash
 samba-tool user create 'archive' 'P@s$w0rd.678' \
     --userou='OU=ACME' \
     --surname='Mail Storage' \
@@ -1318,7 +1319,7 @@ samba-tool user setexpiry archive --noexpiry
 
 Crear registros DNS.
 
-```
+```bash
 samba-tool dns add localhost example.tld mail A '192.168.0.4' -U 'administrator'%'P@s$w0rd.123'
 samba-tool dns add localhost 0.168.192.in-addr.arpa 4 PTR 'mail.example.tld.' -U 'administrator'%'P@s$w0rd.123'
 samba-tool dns add localhost example.tld @ MX 'mail.example.tld 10' -U 'administrator'%'P@s$w0rd.123'
@@ -1335,27 +1336,27 @@ samba-tool dns add localhost example.tld _submission._tcp SRV 'smtp.example.tld 
 
 Crear nueva Unidad Organizativa `Email` para grupos de correo electrónico, perteneciente a `ACME`.
 
-```
+```bash
 samba-tool ou create 'OU=Email,OU=ACME,DC=example,DC=tld' --description='Email Groups Organizational Unit'
 ```
 
 Crear Grupos de Usuarios de correo electrónico.
 
-```
+```bash
 samba-tool group add Everyone --groupou='OU=Email,OU=ACME' --description='All Users Email Group' --mail='everyone@example.tld'
 ```
 
-```
+```bash
 samba-tool group add Management --groupou='OU=Email,OU=ACME' --description='Management Email Group' --mail='management@example.tld'
 ```
 
-```
+```bash
 samba-tool group add Support --groupou='OU=Email,OU=ACME' --description='Technical Support Email Group' --mail='support@example.tld'
 ```
 
 Añadir usuarios a los grupos creados.
 
-```
+```bash
 samba-tool group addmembers 'Everyone' sheldon,leonard,rajesh
 samba-tool group addmembers 'Management' sheldon
 samba-tool group addmembers 'Support' rajesh,sheldon
@@ -1365,14 +1366,14 @@ samba-tool group addmembers 'Support' rajesh,sheldon
 
 Realizar copia de seguridad de los ficheros de configuración.
 
-```
+```bash
 cp /etc/postfix/main.cf{,.org}
 cp /etc/postfix/master.cf{,.org}
 ```
 
 Declarar dominio de correo a gestionar.
 
-```
+```bash
 postconf -e "mydomain = example.tld"
 postconf -e "smtpd_sasl_local_domain = example.tld"
 postconf -e "virtual_mailbox_domains = example.tld"
@@ -1380,17 +1381,17 @@ postconf -e "virtual_mailbox_domains = example.tld"
 
 Definir transporte virtual del dominio de correo.
 
-```
+```bash
 postconf -e "virtual_transport = lmtp:unix:private/dovecot-lmtp"
 ```
 
 Definir usuarios virtuales de correo electrónico.
 
-```
+```bash
 postconf -e "smtpd_sender_login_maps = proxy:ldap:/etc/postfix/virtual_sender_login_maps.cf"
 ```
 
-```
+```bash
 nano /etc/postfix/virtual_sender_login_maps.cf
 
 server_host = dc.example.tld
@@ -1409,13 +1410,13 @@ debuglevel = 0
 
 Definir buzón almacén de correo electrónico.
 
-```
+```bash
 postconf -e "always_bcc = archive@example.tld"
 ```
 
 Definir buzones virtuales de correo electrónico.
 
-```
+```bash
 postconf -e "virtual_minimum_uid = 5000"
 postconf -e "virtual_uid_maps = static:5000"
 postconf -e "virtual_gid_maps = static:5000"
@@ -1423,7 +1424,7 @@ postconf -e "virtual_mailbox_base = /var/vmail"
 postconf -e "virtual_mailbox_maps = proxy:ldap:/etc/postfix/virtual_mailbox_maps.cf"
 ```
 
-```
+```bash
 nano /etc/postfix/virtual_mailbox_maps.cf
 
 server_host = dc.example.tld
@@ -1443,11 +1444,11 @@ debuglevel = 0
 
 Definir listas y aliases virtuales de correo electrónico.
 
-```
+```bash
 postconf -e "virtual_alias_maps = proxy:ldap:/etc/postfix/virtual_list_maps.cf, proxy:ldap:/etc/postfix/virtual_alias_maps.cf"
 ```
 
-```
+```bash
 nano /etc/postfix/virtual_list_maps.cf
 
 server_host = dc.example.tld
@@ -1464,7 +1465,7 @@ result_attribute = userPrincipalName
 debuglevel = 0
 ```
 
-```
+```bash
 nano /etc/postfix/virtual_alias_maps.cf
 
 server_host = dc.example.tld
@@ -1485,7 +1486,7 @@ NOTA: El atributo `otherMailbox` puede editarse utilizando el comando `samba-too
 
 Habilitar puerto seguro `TCP\587 Submission` y establecer comunicación con `dovecot`.
 
-```
+```bash
 nano /etc/postfix/master.cf
 
 submission inet n - y - 10 smtpd
@@ -1501,7 +1502,7 @@ dovecot unix - n n - - pipe
 
 #### Comprobaciones
 
-```
+```bash
 postmap -q leonard@example.tld ldap:/etc/postfix/virtual_sender_login_maps.cf
 postmap -q rajesh@example.tld ldap:/etc/postfix/virtual_mailbox_maps.cf
 postmap -q everyone@example.tld ldap:/etc/postfix/virtual_list_maps.cf
@@ -1510,7 +1511,7 @@ postmap -q postmaster@example.tld ldap:/etc/postfix/virtual_alias_maps.cf
 
 Reiniciar el servicio.
 
-```
+```bash
 systemctl restart postfix.service
 ```
 
@@ -1518,14 +1519,14 @@ systemctl restart postfix.service
 
 * Realizar salva de seguridad del fichero de configuración principal.
 
-```
+```bash
 cp /etc/dovecot/dovecot.conf{,.org}
 ```
 
 * Crear script de alerta de sobreuso de cuota y asignar permiso
   de ejecución.
 
-```
+```bash
 nano /usr/local/bin/quota-warning
 
 #!/bin/bash
@@ -1550,13 +1551,13 @@ EOT
 exit 0
 ```
 
-```
+```bash
 chmod +x /usr/local/bin/quota-warning
 ```
 
 #### Integración con Samba AD DC
 
-```
+```bash
 nano /etc/dovecot/dovecot.conf
 
 userdb {
@@ -1569,7 +1570,7 @@ passdb {
 }
 ```
 
-```
+```bash
 nano /etc/dovecot/dovecot-ldap.conf
 
 hosts = dc.example.tld:389
@@ -1591,7 +1592,7 @@ default_pass_scheme = CRYPT
 
 Reiniciar el servicio.
 
-```
+```bash
 systemctl restart dovecot.service
 ```
 
@@ -1601,7 +1602,7 @@ systemctl restart dovecot.service
 
 Descomprimir el paquete en el sistema y asignar permisos.
 
-```
+```bash
 tar -xzmf roundcubemail-*-complete.tar.gz -C /opt/
 mv /opt/roundcubemail-* /opt/roundcube
 ln -s /opt/roundcube/bin/{cleandb,gc}.sh /etc/cron.daily/
@@ -1615,13 +1616,13 @@ chmod 0770 /opt/roundcube/{logs,temp}
 
 Instalar gestor de base de datos `PostgreSQL`.
 
-```
+```bash
 apt install postgresql
 ```
 
 Crear base de datos para `roundcubemail`.
 
-```
+```bash
 su - postgres
 psql
 \password postgres
@@ -1631,7 +1632,7 @@ CREATE DATABASE roundcubemail WITH TEMPLATE template0 ENCODING 'UNICODE';
 
 Inicializar la base de datos.
 
-```
+```bash
 psql -h localhost -U postgres -W -f /opt/roundcube/SQL/postgres.initial.sql roundcubemail
 ```
 
@@ -1639,13 +1640,13 @@ psql -h localhost -U postgres -W -f /opt/roundcube/SQL/postgres.initial.sql roun
 
 Instalar servidor web `Nginx`.
 
-```
+```bash
 apt install nginx-full php-fpm php-pear php-mbstring php-intl php-ldap php-gd php-imagick php-pgsql
 ```
 
 Definir zona horaria.
 
-```
+```bash
 sed -i "s/^;date\.timezone =.*$/date\.timezone = 'America\/Havana'/;
         s/^;cgi\.fix_pathinfo=.*$/cgi\.fix_pathinfo = 0/" \
         /etc/php/7*/fpm/php.ini
@@ -1653,7 +1654,7 @@ sed -i "s/^;date\.timezone =.*$/date\.timezone = 'America\/Havana'/;
 
 Crear fichero de publicación web.
 
-```
+```bash
 nano /etc/nginx/sites-available/roundcube
 
 proxy_cache_path /tmp/cache keys_zone=cache:10m levels=1:2 inactive=600s max_size=100m;
@@ -1737,7 +1738,7 @@ server {
 
 Habilitar el servicio.
 
-```
+```bash
 ln -s /etc/nginx/sites-available/roundcube /etc/nginx/sites-enabled/
 ```
 
@@ -1745,13 +1746,13 @@ ln -s /etc/nginx/sites-available/roundcube /etc/nginx/sites-enabled/
 
 Instalar servidor web `Apache2`.
 
-```
+```bash
 apt install apache2 libapache2-mod-php php-pear php-mbstring php-intl php-ldap php-gd php-imagick php-pgsql
 ```
 
 Definir zona horaria.
 
-```
+```bash
 sed -i "s/^;date\.timezone =.*$/date\.timezone = 'America\/Havana'/;
         s/^;cgi\.fix_pathinfo=.*$/cgi\.fix_pathinfo = 0/" \
         /etc/php/7*/apache2/php.ini
@@ -1759,7 +1760,7 @@ sed -i "s/^;date\.timezone =.*$/date\.timezone = 'America\/Havana'/;
 
 Crear fichero de publicación web.
 
-```
+```bash
 nano /etc/apache2/sites-available/roundcube.conf
 
 <VirtualHost *:80>
@@ -1808,15 +1809,16 @@ nano /etc/apache2/sites-available/roundcube.conf
 
 Habilitar el servicio.
 
-```
+```bash
 a2ensite roundcube.conf
 ```
 
 #### Integración con Samba AD DC
 
-```
+```bash
 nano /opt/roundcube/config/config.inc.php
-
+```
+```php
 // Database
 $config['db_dsnw'] = 'pgsql://postgres:<contraseña-usuario-postgres>@localhost/roundcubemail';
 
