@@ -1085,8 +1085,8 @@ samba-tool dns add localhost example.tld _xmpp-server._tcp SRV 'jb.example.tld 5
 host -t SRV _xmpp-server._tcp.example.tld
 host -t SRV _xmpp-client._tcp.example.tld
 host -t A jb.example.tld
-dig -t SRV @example.tld _xmpp-client._tcp.example.tld
-dig -t SRV @example.tld _xmpp-server._tcp.example.tld
+dig -t SRV _xmpp-client._tcp.example.tld
+dig -t SRV _xmpp-server._tcp.example.tld
 ```
 
 ### Integración con Samba AD DC
