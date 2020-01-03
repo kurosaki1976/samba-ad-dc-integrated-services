@@ -1896,6 +1896,7 @@ $config['ldap_public']["global_ldap_abook"] = array(
 * `postfix check` (chequeo errores de configuración `postfix`)
 * `dovecot -a` (muestra los parámetros configurados)
 * `nginx -t` (chequeo errores de configuración `nginx`)
+* `apache2ctl configtest` (chequeo errores de configuración `apache2`)
 
 ## Consideraciones finales
 
