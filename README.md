@@ -1636,15 +1636,15 @@ Inicializar la base de datos.
 psql -h localhost -U postgres -W -f /opt/roundcube/SQL/postgres.initial.sql roundcubemail
 ```
 
-#### Actualización de Roundcubemail
-
-Descargar la última versión completa estable, disponible en el sitio [Roundcube Webmail Downloads](https://roundcube.net/download/).
-
-```bash
-tar -xzf roundcubemail-*-complete.tar.gz
-cd roundcubemail-*/
-./bin/install.sh /opt/roundcube/
-```
+> **Actualización de Roundcubemail**
+>
+>Descargar la última versión completa estable, disponible en el sitio [Roundcube Webmail Downloads](https://roundcube.net/download/).
+>
+>```bash
+>tar -xzf roundcubemail-*-complete.tar.gz
+>cd roundcubemail-*/
+>./bin/install.sh /opt/roundcube/
+>```
 
 #### Nginx
 
