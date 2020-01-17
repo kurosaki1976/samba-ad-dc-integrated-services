@@ -1600,7 +1600,7 @@ systemctl restart dovecot.service
 
 #### Roundcubemail
 
-Descomprimir el paquete en el sistema y asignar permisos.
+Descargar la última versión completa estable, disponible en el sitio [Roundcube Webmail Downloads](https://roundcube.net/download/); descomprimir el paquete en el sistema y asignar permisos.
 
 ```bash
 tar -xzmf roundcubemail-*-complete.tar.gz -C /opt/
@@ -1613,8 +1613,6 @@ chmod 0770 /opt/roundcube/{logs,temp}
 ```
 
 > **Actualización**
->
->Descargar la última versión completa estable, disponible en el sitio [Roundcube Webmail Downloads](https://roundcube.net/download/).
 >
 >```bash
 >tar -xzf roundcubemail-*-complete.tar.gz
