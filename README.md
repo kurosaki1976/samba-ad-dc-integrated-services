@@ -1612,6 +1612,16 @@ find /opt/roundcube/ -type f \-exec chmod 0644 {} \;
 chmod 0770 /opt/roundcube/{logs,temp}
 ```
 
+> **Actualización**
+>
+>Descargar la última versión completa estable, disponible en el sitio [Roundcube Webmail Downloads](https://roundcube.net/download/).
+>
+>```bash
+>tar -xzf roundcubemail-*-complete.tar.gz
+>cd roundcubemail-*/
+>./bin/install.sh /opt/roundcube/
+>```
+
 #### PostgreSQL
 
 Instalar gestor de base de datos `PostgreSQL`.
@@ -1635,16 +1645,6 @@ Inicializar la base de datos.
 ```bash
 psql -h localhost -U postgres -W -f /opt/roundcube/SQL/postgres.initial.sql roundcubemail
 ```
-
-> **Actualización de Roundcubemail**
->
->Descargar la última versión completa estable, disponible en el sitio [Roundcube Webmail Downloads](https://roundcube.net/download/).
->
->```bash
->tar -xzf roundcubemail-*-complete.tar.gz
->cd roundcubemail-*/
->./bin/install.sh /opt/roundcube/
->```
 
 #### Nginx
 
