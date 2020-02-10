@@ -67,7 +67,7 @@
 - [Comandos y herramientas útiles](#comandos-y-herramientas-útiles)
 - [Consideraciones finales](#consideraciones-finales)
 - [Referencias](#referencias)
-  - [Samba AD DC+Bind9 DNS Server](#samba-ad-dcbind9-dns-server)
+  - [Samba AD DC+Bind9 DNS Server+DHCP](#samba-ad-dcbind9-dns-server-dhcp)
   - [Squid Proxy Server](#squid-proxy-server-2)
   - [eJabberd XMPP Server](#ejabberd-xmpp-server-2)
   - [Postfix/Dovecot/Roundcube Mail Server](#postfixdovecotroundcube-mail-server-2)
@@ -2576,6 +2576,7 @@ La integración de los servicios descritos en esta guía, también son funcional
 * [How to Configure Group Policy Central Store](https://activedirectorypro.com/configure-group-policy-central-store/)
 * [ Active Directory - Creating a Group Policy Central Store](https://www.petri.com/creating-group-policy-central-store)
 * [GPO Backup and Restore](https://wiki.samba.org/index.php/GPO_Backup_and_Restore)
+* [Samba/Active Directory domain controller - ArchWiki](https://wiki.archlinux.org/index.php/Samba/Active_Directory_domain_controller)
 * [Create an Active Directory Infrastructure with Samba4 on Ubuntu – Part 1](https://www.tecmint.com/install-samba4-active-directory-ubuntu/)
 * [Manage Samba4 Active Directory Infrastructure from Windows10 via RSAT – Part 3](https://www.tecmint.com/manage-samba4-ad-from-windows-via-rsat/)
 
