@@ -67,7 +67,7 @@
 - [Comandos y herramientas útiles](#comandos-y-herramientas-útiles)
 - [Consideraciones finales](#consideraciones-finales)
 - [Referencias](#referencias)
-  - [Samba AD DC+Bind9 DNS Server+DHCP](#samba-ad-dcbind9-dns-server-dhcp)
+  - [Samba AD DC+Bind9 DNS Server+DHCP](#samba-ad-dcbind9-dns-server-dhcp-2)
   - [Squid Proxy Server](#squid-proxy-server-2)
   - [eJabberd XMPP Server](#ejabberd-xmpp-server-2)
   - [Postfix/Dovecot/Roundcube Mail Server](#postfixdovecotroundcube-mail-server-2)
