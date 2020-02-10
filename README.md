@@ -469,7 +469,7 @@ smbclient //localhost/netlogon -Uadministrator -c 'ls'
 
 ## Configuración del servidor Bind9 DNS
 
-Durante el aprovisionamiento se utilizó el `dns-backend=SAMBA_INTERNAL`, que provee un servidor DNS interno del paquete Samba; aunque funcional en un entorno básico, tiene determinadas desventajas, como son la asignación de servidores `DNS forwarders` y una caché de resolución lenta. Para suplir estas carencias, se instalará Bind9 integrándolo a Samba.
+Durante el aprovisionamiento se utilizó el `dns-backend=SAMBA_INTERNAL`, que provee un servidor `DNS` interno del paquete `Samba`; aunque funcional en un entorno básico, tiene determinadas desventajas, como son la asignación de servidores `DNS forwarders` y una caché de resolución lenta. Para suplir estas carencias, se configurará `Bind9` integrándolo a `Samba`.
 
 ### Integración con Samba AD DC
 
