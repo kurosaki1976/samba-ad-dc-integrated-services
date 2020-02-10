@@ -302,7 +302,7 @@ Deshabilitar la interacción de configuración y proceder con la instalación de
 
 ```bash
 export DEBIAN_FRONTEND=noninteractive
-apt install samba krb5-user winbind libnss-winbind net-tools bind9 dnsutils ntpdate ntp ldap-utils smbclient ldb-tools rsync
+apt install samba krb5-user winbind libnss-winbind net-tools bind9 dnsutils ntpdate ntp ldap-utils smbclient ldb-tools
 unset DEBIAN_FRONTEND
 ```
 
@@ -665,8 +665,8 @@ apt install isc-dhcp-server
 ```
 
 > **NOTA**: Este método puede afectar funcionalidades en los clientes `Windows`, los cuales tratarán de actualizar los registros `DNS` por sí mismos, utilizando sus cuentas de `hosts`. Para evitar este comportamiento, debe crearse una Política de Grupo y aplicarla a Unidades Organizativas que contengan equipos.
-
-> La GPO debe configurarse con los siguientes parámetros:
+>
+> La `GPO` debe configurarse con los siguientes parámetros:
 
 ```cmd
 Computer Configuration
@@ -1078,7 +1078,7 @@ shared-network EXAMPLE {
 
 > **NOTA**: Esta configuración asignará direcciones `IP` y actualizará los registros `DNS` para todos los `hosts` que se conecten a la red y que tengan habilitada la obtención de parámetros de red vía `DHCP`.
 
-> Si solo se quisiera asignar parámetros de red a los `hosts` que realmente forman parte de nuestra organización, se puede usar la funcionalidad de clases y subclases, ejemplo:
+Si solo se quisiera asignar parámetros de red a los `hosts` que realmente forman parte de la organización, se puede usar la funcionalidad de clases y subclases, ejemplo:
 
 ```bash
 class "allocation-class-1" {
@@ -1092,7 +1092,7 @@ pool {
 }
 ```
 
-> Otra forma sería definiendo asignaciones estáticas, ejemplo:
+Otra forma sería definiendo asignaciones estáticas, ejemplo:
 
 ```bash
 pool {
@@ -1111,7 +1111,7 @@ pool {
 }
 ```
 
-> También se puede usar la combinación de ambas técnicas, ejemplo:
+También se puede usar la combinación de ambas técnicas, ejemplo:
 
 ```bash
 class "allocation-class-1" {
@@ -1136,7 +1136,7 @@ pool {
 }
 ```
 
-> Idependientemente del método que se adopte, deben conocerse de antemano las direcciones `MAC` de los `hosts`, y establecer la asignación de parámetros de red dentro de la subcláusula `subnet {}` y el rango de direcciones `IP` a asignar, debe estar contenido dentro de la subcláusula `pool {}`, ejemplo:
+Idependientemente del método que se adopte, deben conocerse de antemano las direcciones `MAC` de los `hosts`, y establecer la asignación de parámetros de red dentro de la subcláusula `subnet {}` y el rango de direcciones `IP` a asignar, debe estar contenido dentro de la subcláusula `pool {}`, ejemplo:
 
 ```bash
 nano /etc/dhcp/dhcpd.conf
@@ -1210,14 +1210,14 @@ shared-network EXAMPLE {
 
 ### Comprobaciones
 
-> **NOTA**: Se puede verificar la configuración del servidor `DHCP`, ejecutando el comando `dhcpd -t`.
-
 Reiniciar el servicio y observar las salidas generadas en el fichero de trazas `/var/log/syslog`.
 
 ```bash
 systemctl restart isc-dhcp-server
 tail -fn100 /var/log/syslog
 ```
+
+> **NOTA**: Se puede verificar la configuración del servidor `DHCP`, ejecutando el comando `dhcpd -t`.
 
 ## Creación de Unidades Organizativas, Grupos y Cuentas de Usuarios
 
@@ -1286,7 +1286,7 @@ samba-tool group addmembers 'Group Policy Creator Owners' john.doe
 
 ## Creación de Políticas de Grupos (Group Policy Object - GPO)
 
-En los sistemas operativos Windows, una Política de Grupo (Group Policy Object - GPO) es un conjunto de configuraciones que define cómo debe lucir y comportarse el sistema para usuarios y/ó grupos de usuarios y ordenadores, previamente definidos y agrupados en OUs.
+En los sistemas operativos Windows, una Política de Grupo (`Group Policy Object - GPO`) es un conjunto de configuraciones que define cómo será la apariencia y el comportamiento del sistema, para usuarios y/ó grupos de usuarios y ordenadores, previamente definidos y agrupados en `OUs`.
 
 Configurar almacén central para definiciones de directivas.
 
@@ -2575,10 +2575,10 @@ La integración de los servicios descritos en esta guía, también son funcional
 * [Samba 4 como Controlador de Dominios AD DC en Debian 9](https://usuariodebian.blogspot.com/2019/04/samba-4-como-controlador-de-dominios-ad.html)
 * [Setting up a Samba 4 Domain Controller on Debian 9](https://jonathonreinhart.com/posts/blog/2019/02/11/setting-up-a-samba-4-domain-controller-on-debian-9/)
 * [Raising the Functional Levels](https://wiki.samba.org/index.php/Raising_the_Functional_Levels)
+* [Samba/Active Directory domain controller - ArchWiki](https://wiki.archlinux.org/index.php/Samba/Active_Directory_domain_controller)
 * [How to Configure Group Policy Central Store](https://activedirectorypro.com/configure-group-policy-central-store/)
 * [ Active Directory - Creating a Group Policy Central Store](https://www.petri.com/creating-group-policy-central-store)
 * [GPO Backup and Restore](https://wiki.samba.org/index.php/GPO_Backup_and_Restore)
-* [Samba/Active Directory domain controller - ArchWiki](https://wiki.archlinux.org/index.php/Samba/Active_Directory_domain_controller)
 * [Create an Active Directory Infrastructure with Samba4 on Ubuntu – Part 1](https://www.tecmint.com/install-samba4-active-directory-ubuntu/)
 * [Manage Samba4 Active Directory Infrastructure from Windows10 via RSAT – Part 3](https://www.tecmint.com/manage-samba4-ad-from-windows-via-rsat/)
 
