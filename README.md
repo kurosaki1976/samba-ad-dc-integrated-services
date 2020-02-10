@@ -34,7 +34,7 @@
   - [Comprobaciones](#comprobaciones-2)
 - [Configuración del servidor DHCP](#configuración-del-servidor-dhcp)
   - [Integración con Samba AD DC](#integración-con-samba-ad-dc-1)
-  - [Integración con Bind9 DNS](#integración-con-bind9-dns-2)
+  - [Integración con Bind9 DNS](#integración-con-bind9-dns)
   - [Comprobaciones](#comprobaciones-3)
 - [Creación de Unidades Organizativas, Grupos y Cuentas de Usuarios](#creación-de-unidades-organizativas-grupos-y-cuentas-de-usuarios)
   - [Creación de Unidades Organizativas (Organizational Units - OU)](#creación-de-unidades-organizativas-organizational-units---ou)
