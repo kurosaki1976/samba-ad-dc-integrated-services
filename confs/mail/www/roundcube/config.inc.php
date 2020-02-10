@@ -44,8 +44,13 @@ $config['plugins'] = array(
     'archive',
     'zipdownload',
     'newmail_notifier',
+    'jqueryui',
 );
-$config['skin'] = 'larry';
+$config['skin'] = 'elastic';
+$config['skins_allowed'] = array(
+     'elastic',
+     'larry',
+);
 $config['cipher_method'] = 'AES-256-CBC';
 $config['force_https'] = true;
 $config['useragent'] = 'Roundcube Webmail';

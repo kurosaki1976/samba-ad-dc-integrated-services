@@ -12,6 +12,16 @@ log_rate_limit: 100
 hosts:
   - "example.tld"
 
+define_macro:
+  'TLS_CIPHERS': "HIGH:!aNULL:!eNULL:!3DES:@STRENGTH"
+  'TLS_OPTIONS':
+    - "no_sslv3"
+    - "no_tlsv1"
+    - "no_tlsv1_1"
+    - "cipher_server_preference"
+    - "no_compression"
+  'DH_FILE': "/etc/ejabberd/dh2048.pem"
+
 ###.  ===============
 ###'  LISTENING PORTS
 listen:
@@ -21,13 +31,8 @@ listen:
     module: ejabberd_c2s
     certfile: "/etc/ejabberd/ejabberd.pem"
     starttls: true
-    protocol_options:
-      - "no_sslv3"
-      - "no_sslv2"
-      - "no_tlsv1"
-      - "no_tlsv1_1"
-    ciphers: "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:\
-        ECDHE-RSA-AES128-SHA256"
+    protocol_options: 'TLS_OPTIONS'
+    ciphers: 'TLS_CIPHERS'
     max_stanza_size: 65536
     shaper: c2s_shaper
     access: c2s
@@ -35,7 +40,7 @@ listen:
     resend_on_timeout: if_offline
     tls_compression: false
     starttls_required: true
-    dhfile: "/etc/ssl/dh2048.pem"
+    dhfile: 'DH_FILE'
   -
     port: 5269
     ip: "::"
@@ -56,8 +61,9 @@ disable_sasl_mechanisms: "digest-md5"
 ###'  S2S GLOBAL OPTIONS
 s2s_use_starttls: optional
 s2s_certfile: "/etc/ejabberd/ejabberd.pem"
-s2s_protocol_options:
-  - "no_sslv3"
+s2s_ciphers: 'TLS_CIPHERS'
+s2s_protocol_options: 'TLS_OPTIONS'
+s2s_dhfile: 'DH_FILE'
 outgoing_s2s_families:
    - ipv4
 
@@ -184,7 +190,12 @@ modules:
     ldap_filter: "(&(objectClass=person)(!(userAccountControl:1.2.840.113556.1.4.803:=2))"
   mod_stats: {}
   mod_time: {}
+  mod_vcard:
+    search: false
   mod_vcard_ldap:
+    ldap_rootdn: "ejabberd@example.tld"
+    ldap_password: "P@s$w0rd.012"
+    ldap_base: "OU=ACME,DC=example,DC=tld"
     ldap_uids: {"sAMAccountName": "%u"}
     matches: infinity
     ldap_vcard_map:
@@ -198,9 +209,11 @@ modules:
       "ORGUNIT": {"%s": ["department"]}
       "TITLE": {"%s": ["title"]}
       "TEL": {"%s": ["telephoneNumber"]}
+      "PHOTO": {"%s": ["jpegPhoto"]}
     ldap_search_fields:
       "User": "%u"
-      "Full Name":  "displayName"
+      "Name": "givenName"
+      "Family Name": "sn"
       "Email": "mail"
     ldap_search_reported:
       "Full Name": "FN"

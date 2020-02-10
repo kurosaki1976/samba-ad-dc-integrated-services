@@ -32,6 +32,10 @@
 - [Configuración del servidor NTP](#configuración-del-servidor-ntp)
   - [Integración con Samba AD DC](#integración-con-samba-ad-dc-1)
   - [Comprobaciones](#comprobaciones-2)
+- [Configuración del servidor DHCP](#configuración-del-servidor-dhcp)
+  - [Integración con Samba AD DC](#integración-con-samba-ad-dc-1)
+  - [Integración con Bind9 DNS](#integración-con-bind9-dns-2)
+  - [Comprobaciones](#comprobaciones-3)
 - [Creación de Unidades Organizativas, Grupos y Cuentas de Usuarios](#creación-de-unidades-organizativas-grupos-y-cuentas-de-usuarios)
   - [Creación de Unidades Organizativas (Organizational Units - OU)](#creación-de-unidades-organizativas-organizational-units---ou)
   - [Creación de Grupos](#creación-de-grupos)
@@ -296,7 +300,7 @@ Deshabilitar la interacción de configuración y proceder con la instalación de
 
 ```bash
 export DEBIAN_FRONTEND=noninteractive
-apt install samba krb5-user winbind libnss-winbind net-tools bind9 dnsutils ntpdate ntp
+apt install samba krb5-user winbind libnss-winbind net-tools bind9 dnsutils ntpdate ntp ldap-utils smbclient ldb-tools
 unset DEBIAN_FRONTEND
 ```
 
@@ -348,10 +352,14 @@ nano /etc/samba/smb.conf
     netbios name = DC
     realm = EXAMPLE.TLD
     server role = active directory domain controller
-    server string = Samba4 AD DC
+    server services = s3fs, rpc, nbt, wrepl, ldap, cldap, kdc, drepl, winbindd, ntp_signd, kcc, dnsupdate
+    server string = Samba4 %v AD DC
     workgroup = EXAMPLE
     idmap_ldb:use rfc2307 = yes
     ldap server require strong auth = no
+    log level = 3
+    printing = bsd
+    printcap name = /dev/null
 [netlogon]
     path = /var/lib/samba/sysvol/example.tld/scripts
     read only = No
@@ -396,6 +404,8 @@ nano /etc/krb5.conf
 [domain_realm]
     .example.tld = EXAMPLE.TLD
     example.tld = EXAMPLE.TLD
+[kdc]
+    check-ticket-addresses = false
 ```
 
 Iniciar, verificar el estado y habilitar el servicio de Samba AD DC.
@@ -443,6 +453,18 @@ Listar tickets de Kerberos en caché.
 klist
 ```
 
+Listar recursos compartidos.
+
+```bash
+smbclient -L localhost -U%
+```
+
+Comprobar funcionamiento de la autenticación.
+
+```bash
+smbclient //localhost/netlogon -Uadministrator -c 'ls'
+```
+
 ## Configuración del servidor Bind9 DNS
 
 Durante el aprovisionamiento se utilizó el `dns-backend=SAMBA_INTERNAL`, que provee un servidor DNS interno del paquete Samba; aunque funcional en un entorno básico, tiene determinadas desventajas, como son la asignación de servidores `DNS forwarders` y una caché de resolución lenta. Para suplir estas carencias, se instalará Bind9 integrándolo a Samba.
@@ -476,7 +498,11 @@ dlz "samba4" {
 
 ```bash
 samba_upgradedns --dns-backend=BIND9_DLZ
-chown bind /var/lib/samba/private/dns.keytab
+chgrp bind /var/lib/samba/private/dns.keytab
+chmod g+r /var/lib/samba/private/dns.keytab
+touch /var/log/named.log
+chown root:bind /var/log/named.log
+chmod 664 /var/log/named.log
 mv /etc/bind/named.conf.options{,.org}
 ```
 
@@ -484,15 +510,35 @@ mv /etc/bind/named.conf.options{,.org}
 nano /etc/bind/named.conf.options
 
 options {
+    version none;
+    hostname none;
+    server-id none;
     directory "/var/cache/bind";
     forwarders { 8.8.8.8; 8.8.4.4; };
     forward first;
+    dnssec-enable no;
     dnssec-validation no;
-    auth-nxdomain no;
+    dnssec-lookaside no;
+    auth-nxdomain yes;
     listen-on-v6 { none; };
     tkey-gssapi-keytab "/var/lib/samba/private/dns.keytab";
-    allow-query { any; };
-    recursion yes;
+    allow-query { 192.168.0.0/24; 127.0.0.1; };
+    allow-recursion { 192.168.0.0/24; 127.0.0.1; };
+    allow-update { 192.168.0.0/24; 127.0.0.1; };
+    datasize default;
+    empty-zones-enable no;
+};
+
+logging {
+    channel xfer-log {
+        file "/var/log/named.log";
+        print-category yes;
+        print-severity yes;
+        severity info;
+    };
+    category xfer-in { xfer-log; };
+    category xfer-out { xfer-log; };
+    category notify { xfer-log; };
 };
 ```
 
@@ -608,6 +654,569 @@ ntpdate -vqd ntp.tld
 ntpq -p
 ```
 
+## Configuración del servidor DHCP
+
+Instalar el paquete `isc-dhcp-server` para asignar direcciones `IP` a los `hosts` clientes, permitiendo la actualización dinámica de sus registros `DNS` tanto para la zona directa como la inversa.
+
+```bash
+apt install isc-dhcp-server
+```
+
+> **NOTA**: Este método puede afectar funcionalidades en los clientes `Windows`, los cuales tratarán de actualizar los registros `DNS` por sí mismos, utilizando sus cuentas de `hosts`. Para evitar este comportamiento, debe crearse una Política de Grupo y aplicarla a Unidades Organizativas que contengan equipos.
+
+> La GPO debe configurarse con los siguientes parámetros:
+
+```cmd
+Computer Configuration
+  Policies
+    Administrative Templates
+      Network
+        DNS Client
+          Dynamic Update = Disabled
+          Register PTR Records = Disabled
+```
+
+### Integración con Samba AD DC
+
+Crear un usuario no privilegiado, pero otorgándole permisos de administración sobre el servidor `DNS`. Aunque no es obligatorio, es recomendable inhabilitar el tiempo de expiración de la contraseña.
+
+```bash
+samba-tool user create dhcp --description='Unprivileged DHCP Server user account' --random-password
+samba-tool user setexpiry dhcp --noexpiry
+samba-tool group addmembers 'DnsAdmins' dhcp
+```
+
+Exportar las credenciales del usuario a un archivo `keytab`, y asignar permisos necesarios.
+
+```bash
+samba-tool domain exportkeytab --principal=dhcp@EXAMPLE.TLD /etc/dhcp/dhcpd.keytab
+chown root:root /etc/dhcp/dhcpd.keytab
+chmod 400 /etc/dhcp/dhcpd.keytab
+```
+
+### Integración con Bind9 DNS
+
+Crear el fichero `/etc/dhcp/dhcpd-update-samba-dns.conf`, que contendrá las variables a utilizarse para la actualización de los registros `DNS`.
+
+```bash
+/etc/dhcpd/dhcpd-update-samba-dns.conf
+
+# Variables
+KRB5CC="/run/dhcpd.krb5cc"
+KEYTAB="/etc/dhcp/dhcpd.keytab"
+DOMAIN="example.tld"
+REALM="EXAMPLE.TLD"
+PRINCIPAL="dhcp@${REALM}"
+NAMESERVER="dc.${DOMAIN}"
+ZONE="${DOMAIN}"
+```
+
+Crear los `scripts` de actualización de los registros `DNS`.
+
+```bash
+nano /etc/dhcp/dhcpd-update-dns.sh
+
+#!/bin/bash
+# Begin dhcpd-update-dns.sh
+
+. /etc/dhcpd/dhcpd-update-samba-dns.conf || exit 1
+
+ACTION=$1
+IP=$2
+HNAME=$3
+
+export KRB5CC KEYTAB DOMAIN REALM PRINCIPAL NAMESERVER ZONE ACTION IP HNAME
+
+/usr/bin/samba-dnsupdate.sh -m &
+
+# End dhcpd-update-samba-dns.sh
+```
+
+```bash
+nano /usr/bin/samba-dnsupdate.sh
+
+#!/bin/bash
+# Begin samba-dnsupdate.sh
+# Author: DJ Lucas <dj_AT_linuxfromscratch_DOT_org>
+# kerberos_creds() courtesy of Sergey Urushkin
+# http://www.kuron-germany.de/michael/blog/wp-content/uploads/2012/03/dhcpdns-sergey2.txt
+
+# DHCP server should be authoritative for its own records, sleep for 5 seconds
+# to allow unconfigured Windows hosts to create their own DNS records
+# In order to use this script you should disable dynamic updates by hosts that
+# will receive addresses from this DHCP server. Instructions are found here:
+# https://wiki.archlinux.org/index.php/Samba_4_Active_Directory_Domain_Controller#DHCP
+sleep 5
+
+checkvalues()
+{
+        [ -z "${2}" ] && echo "Error: argument '${1}' requires a parameter." && exit 1
+
+        case ${2} in
+
+                -*)
+                        echo "Error: Invalid parameter '${2}' passed to ${1}."
+                        exit 1
+                ;;
+
+                *)
+                        return 0
+                ;;
+        esac
+}
+
+showhelp()
+{
+echo -e "\n"`basename ${0}` "uses samba-tool to update DNS records in Samba 4's DNS"
+echo "server when using INTERNAL DNS or BIND9 DLZ plugin."
+echo ""
+echo "    Command line options (and variables):"
+echo ""
+echo "      -a | --action      Action for this script to perform"
+echo "                         ACTION={add|delete}"
+echo "      -c | --krb5cc      Path of the krb5 credential cache (optional)"
+echo "                         Default: KRB5CC=/run/dhcpd.krb5cc"
+echo "      -d | --domain      The DNS domain/zone to be updated"
+echo "                         DOMAIN={domain.tld}"
+echo "      -h | --help        Show this help message and exit"
+echo "      -H | --hostname    Hostname of the record to be updated"
+echo "                         HNAME={hostname}"
+echo "      -i | --ip          IP address of the host to be updated"
+echo "                         IP={0.0.0.0}"
+echo "      -k | --keytab      Krb5 keytab to be used for authorization (optional)"
+echo "                         Default: KEYTAB=/etc/dhcp/dhcpd.keytab"
+echo "      -m | --mitkrb5     Use MIT krb5 client utilities"
+echo "                         MITKRB5={YES|NO}"
+echo "      -n | --nameserver  DNS server to be updated (must use FQDN, not IP)"
+echo "                         NAMESERVER={server.internal.domain.tld}"
+echo "      -p | --principal   Principal used for DNS updates"
+echo "                         PRINCIPAL={user@domain.tld}"
+echo "      -r | --realm       Authentication realm"
+echo "                         REALM={DOMAIN.TLD}"
+echo "      -z | --zone        Then name of the zone to be updated in AD."
+echo "                         ZONE={zonename}"
+echo ""
+echo "Example: $(basename $0) -d domain.tld -i 192.168.0.x -n 192.168.0.x \\"
+echo "             -r DOMAIN.TLD -p user@domain.tld -H HOSTNAME -m"
+echo ""
+}
+
+# Process arguments
+[ -z "$1" ] && showhelp && exit 1
+while [ -n "$1" ]; do
+        case $1 in
+
+                -a | --action)
+                        checkvalues ${1} ${2}
+                        ACTION=${2}
+                        shift 2
+                ;;
+
+                -c | --krb5cc)
+                        checkvalues ${1} ${2}
+                        KRB5CC=${2}
+                        shift 2
+                ;;
+
+                -d | --domain)
+                        checkvalues ${1} ${2}
+                        DOMAIN=${2}
+                        shift 2
+                ;;
+
+                -h | --help)
+                        showhelp
+                        exit 0
+                ;;
+
+                -H | --hostname)
+                        checkvalues ${1} ${2}
+                        HNAME=${2%%.*}
+                        shift 2
+                ;;
+
+                -i | --ip)
+                        checkvalues ${1} ${2}
+                        IP=${2}
+                        shift 2
+                ;;
+
+                -k | --keytab)
+                        checkvalues ${1} ${2}
+                        KEYTAB=${2}
+                        shift 2
+                ;;
+
+                -m | --mitkrb5)
+                        KRB5MIT=YES
+                        shift 1
+                ;;
+
+                -n | --nameserver)
+                        checkvalues ${1} ${2}
+                        NAMESERVER=${2}
+                        shift 2
+                ;;
+
+                -p | --principal)
+                        checkvalues ${1} ${2}
+                        PRINCIPAL=${2}
+                        shift 2
+                ;;
+
+                -r | --realm)
+                        checkvalues ${1} ${2}
+                        REALM=${2}
+                        shift 2
+                ;;
+
+                -z | --zone)
+                        checkvalues ${1} ${2}
+                        ZONE=${2}
+                        shift 2
+                ;;
+
+                *)
+                        echo "Error!!! Unknown command line opion!"
+                        echo "Try" `basename $0` "--help."
+                        exit 1
+                ;;
+        esac
+done
+
+# Sanity checking
+[ -z "$ACTION" ] && echo "Error: action not set." && exit 2
+case "$ACTION" in
+        add | Add | ADD)
+                ACTION=ADD
+        ;;
+        del | delete | Delete | DEL | DELETE)
+                ACTION=DEL
+        ;;
+        *)
+                echo "Error: invalid action \"$ACTION\"." && exit 3
+        ;;
+esac
+[ -z "$KRB5CC" ] && KRB5CC=/run/dhcpd.krb5cc
+[ -z "$DOMAIN" ] && echo "Error: invalid domain." && exit 4
+[ -z "$HNAME" ] && [ "$ACTION" == "ADD" ] && \
+     echo "Error: hostname not set." && exit 5
+[ -z "$IP" ] && echo "Error: IP address not set." && exit 6
+[ -z "$KEYTAB" ] && KEYTAB=/etc/dhcp/dhcpd.keytab
+[ -z "$NAMESERVER" ] && echo "Error: nameservers not set." && exit 7
+[ -z "$PRINCIPAL" ] && echo "Error: principal not set." && exit 8
+[ -z "$REALM" ] && echo "Error: realm not set." && exit 9
+[ -z "$ZONE" ] && echo "Error: zone not set." && exit 10
+
+# Disassemble IP for reverse lookups
+OCT1=$(echo $IP | cut -d . -f 1)
+OCT2=$(echo $IP | cut -d . -f 2)
+OCT3=$(echo $IP | cut -d . -f 3)
+OCT4=$(echo $IP | cut -d . -f 4)
+RZONE="$OCT3.$OCT2.$OCT1.in-addr.arpa"
+
+kerberos_creds() {
+export KRB5_KTNAME="$KEYTAB"
+export KRB5CCNAME="$KRB5CC"
+
+if [ "$KRB5MIT" = "YES" ]; then
+    KLISTARG="-s"
+else
+    KLISTARG="-t"
+fi
+
+klist $KLISTARG || kinit -k -t "$KEYTAB" -c "$KRB5CC" "$PRINCIPAL" || { logger -s -p daemon.error -t dhcpd kinit for dynamic DNS failed; exit 11; }
+}
+
+
+add_host(){
+    logger -s -p daemon.info -t dhcpd Adding A record for host $HNAME with IP $IP to zone $ZONE on server $NAMESERVER
+    samba-tool dns add $NAMESERVER $ZONE $HNAME A $IP -k yes
+}
+
+
+delete_host(){
+    logger -s -p daemon.info -t dhcpd Removing A record for host $HNAME with IP $IP from zone $ZONE on server $NAMESERVER
+    samba-tool dns delete $NAMESERVER $ZONE $HNAME A $IP -k yes
+}
+
+
+update_host(){
+    logger -s -p daemon.info -t dhcpd Removing A record for host $HNAME with IP $CURIP from zone $ZONE on server $NAMESERVER
+    samba-tool dns delete $NAMESERVER $ZONE $HNAME A $CURIP -k yes
+    add_host
+}
+
+
+add_ptr(){
+    logger -s -p daemon.info -t dhcpd Adding PTR record $OCT4 with hostname $HNAME to zone $RZONE on server $NAMESERVER
+    samba-tool dns add $NAMESERVER $RZONE $OCT4 PTR $HNAME.$DOMAIN -k yes
+}
+
+
+delete_ptr(){
+    logger -s -p daemon.info -t dhcpd Removing PTR record $OCT4 with hostname $HNAME from zone $RZONE on server $NAMESERVER
+    samba-tool dns delete $NAMESERVER $RZONE $OCT4 PTR $HNAME.$DOMAIN -k yes
+}
+
+
+update_ptr(){
+    logger -s -p daemon.info -t dhcpd Removing PTR record $OCT4 with hostname $CURHNAME from zone $RZONE on server $NAMESERVER
+    samba-tool dns delete $NAMESERVER $RZONE $OCT4 PTR $CURHNAME -k yes
+    add_ptr
+}
+
+case "$ACTION" in
+    ADD)
+        kerberos_creds
+        host -t A $HNAME.$DOMAIN > /dev/null
+        if [ "${?}" == 0 ]; then
+          CURIP=$(host -t A $HNAME.$DOMAIN | cut -d " " -f 4 )
+          if [[ "$CURIP" != "$IP" ]]; then
+             update_host
+          fi
+        else
+           add_host
+        fi
+
+        host -t PTR $IP > /dev/null
+        if [ "${?}" == 0 ]; then
+           CURHNAME=$(host -t PTR $IP | cut -d " " -f 5 | rev | cut -c 2- | rev)
+           if [[ "$CURHNAME" != "$HNAME.$DOMAIN" ]]; then
+              update_ptr
+           fi
+        else
+           add_ptr
+        fi
+    ;;
+
+    DEL)
+        kerberos_creds
+        host -t A $HNAME.$DOMAIN > /dev/null
+        if [ "${?}" == 0 ]; then
+            delete_host
+        fi
+
+        host -t PTR $IP > /dev/null
+        if [ "${?}" == 0 ]; then
+            delete_ptr
+        fi
+    ;;
+
+    *)
+        echo "Error: Invalid action '$ACTION'!" && exit 12
+    ;;
+esac
+
+# End samba-dnsupdate.sh
+```
+
+Asignar permisos de ejecución.
+
+```bash
+chmod +x /etc/dhcp/dhcpd-update-dns.sh /usr/bin/samba-dnsupdate.sh
+```
+
+Crear fichero principal del servicio `DHCP`.
+
+```bash
+mv /etc/dhcp/dhcpd.conf
+```
+
+```bash
+nano /etc/dhcp/dhcpd.conf
+
+authoritative;
+server-identifier 192.168.0.1;
+ddns-update-style none;
+deny declines;
+deny bootp;
+deny duplicates;
+log-facility local7;
+
+shared-network EXAMPLE {
+  subnet 192.168.0.0 netmask 255.255.255.0 {
+    range 192.168.0.200 192.168.0.250;
+    option domain-name "example.tld";
+    option domain-name-servers 192.168.0.1;
+    option routers 192.168.0.254;
+    option subnet-mask 255.255.255.0;
+    option broadcast-address 192.168.0.255;
+    option netbios-name-servers 192.168.0.1;
+    option netbios-node-type 8;
+    option ntp-servers 192.168.0.1;
+    option time-offset -18000;
+    do-forward-updates false;
+    ignore client-updates;
+    update-static-leases false;
+    one-lease-per-client true;
+    update-conflict-detection false;
+    deny client-updates;
+    default-lease-time 86400;
+    max-lease-time 86400;
+    on commit {
+      set ClientIP = binary-to-ascii(10, 8, ".", leased-address);
+      set ClientName = pick-first-value(option host-name, host-decl-name);
+      execute("/etc/dhcp/dhcpd-update-dns.sh", "add", ClientIP, ClientName);
+    }
+    on release {
+      set ClientIP = binary-to-ascii(10, 8, ".", leased-address);
+      set ClientName = pick-first-value(option host-name, host-decl-name);
+      execute("/etc/dhcp/dhcpd-update-dns.sh", "delete", ClientIP, ClientName);
+    }
+    on expiry {
+      set ClientIP = binary-to-ascii(10, 8, ".", leased-address);
+      set ClientName = pick-first-value(option host-name, host-decl-name);
+      execute("/etc/dhcp/dhcpd-update-dns.sh", "delete", ClientIP, ClientName);
+    }
+
+  }
+}
+```
+
+> **NOTA**: Esta configuración asignará direcciones `IP` y actualizará los registros `DNS` para todos los `hosts` que se conecten a la red y que tengan habilitada la obtención de parámetros de red vía `DHCP`.
+
+> Si solo se quisiera asignar parámetros de red a los `hosts` que realmente forman parte de nuestra organización, se puede usar la funcionalidad de clases y subclases, ejemplo:
+
+```bash
+class "allocation-class-1" {
+  match pick-first-value (option dhcp-client-identifier, hardware);
+}
+subclass "allocation-class-1" 1:08:00:27:aa:70:37;
+subclass "allocation-class-1" 1:08:00:27:9f:ff:05;
+pool {
+  range 192.168.0.200 192.168.0.250;
+  allow members of "allocation-class-1";
+}
+```
+
+> Otra forma sería definiendo asignaciones estáticas, ejemplo:
+
+```bash
+pool {
+  range 192.168.0.200 192.168.0.250;
+  deny unknown-clients;
+  group {
+    host pc-client1 {
+      hardware ethernet 08:00:27:aa:70:37;
+      fixed-address 192.168.0.200;
+    }
+    host pc-client2 {
+      hardware ethernet 08:00:27:9f:ff:05;
+      fixed-address 192.168.0.201;
+    }
+  }
+}
+```
+
+> También se puede usar la combinación de ambas técnicas, ejemplo:
+
+```bash
+class "allocation-class-1" {
+  match pick-first-value (option dhcp-client-identifier, hardware);
+}
+subclass "allocation-class-1" 1:08:00:27:aa:70:37;
+subclass "allocation-class-1" 1:08:00:27:9f:ff:05;
+pool {
+  range 192.168.0.200 192.168.0.250;
+  allow members of "allocation-class-1";
+  deny unknown-clients;
+  group {
+    host pc-client1 {
+      hardware ethernet 08:00:27:aa:70:37;
+      fixed-address 192.168.0.200;
+    }
+    host pc-client2 {
+      hardware ethernet 08:00:27:9f:ff:05;
+      fixed-address 192.168.0.201;
+    }
+  }
+}
+```
+
+> Idependientemente del método que se adopte, deben conocerse de antemano las direcciones `MAC` de los `hosts`, y establecer la asignación de parámetros de red dentro de la subcláusula `subnet {}` y el rango de direcciones `IP` a asignar, debe estar contenido dentro de la subcláusula `pool {}`, ejemplo:
+
+```bash
+nano /etc/dhcp/dhcpd.conf
+
+authoritative;
+server-identifier 192.168.0.1;
+ddns-update-style none;
+deny declines;
+deny bootp;
+deny duplicates;
+log-facility local7;
+
+shared-network EXAMPLE {
+  subnet 192.168.0.0 netmask 255.255.255.0 {
+    option domain-name "example.tld";
+    option domain-name-servers 192.168.0.1;
+    option routers 192.168.0.254;
+    option subnet-mask 255.255.255.0;
+    option broadcast-address 192.168.0.255;
+    option netbios-name-servers 192.168.0.1;
+    option netbios-node-type 8;
+    option ntp-servers 192.168.0.1;
+    option time-offset -18000;
+    do-forward-updates false;
+    ignore client-updates;
+    update-static-leases false;
+    one-lease-per-client true;
+    update-conflict-detection false;
+    deny client-updates;
+    default-lease-time 86400;
+    max-lease-time 86400;
+    class "allocation-class-1" {
+      match pick-first-value (option dhcp-client-identifier, hardware);
+    }
+    subclass "allocation-class-1" 1:08:00:27:aa:70:37;
+    subclass "allocation-class-1" 1:08:00:27:9f:ff:05;
+    pool {
+      range 192.168.0.200 192.168.0.250;
+      allow members of "allocation-class-1";
+      deny unknown-clients;
+      group {
+        host pc-client1 {
+          hardware ethernet 08:00:27:aa:70:37;
+          fixed-address 192.168.0.200;
+        }
+        host pc-client2 {
+          hardware ethernet 08:00:27:9f:ff:05;
+          fixed-address 192.168.0.201;
+        }
+      }
+    }
+    on commit {
+      set ClientIP = binary-to-ascii(10, 8, ".", leased-address);
+      set ClientName = pick-first-value(option host-name, host-decl-name);
+      execute("/etc/dhcp/dhcpd-update-dns.sh", "add", ClientIP, ClientName);
+    }
+    on release {
+      set ClientIP = binary-to-ascii(10, 8, ".", leased-address);
+      set ClientName = pick-first-value(option host-name, host-decl-name);
+      execute("/etc/dhcp/dhcpd-update-dns.sh", "delete", ClientIP, ClientName);
+    }
+    on expiry {
+      set ClientIP = binary-to-ascii(10, 8, ".", leased-address);
+      set ClientName = pick-first-value(option host-name, host-decl-name);
+      execute("/etc/dhcp/dhcpd-update-dns.sh", "delete", ClientIP, ClientName);
+    }
+
+  }
+}
+```
+
+### Comprobaciones
+
+> **NOTA**: Se puede verificar la configuración del servidor `DHCP`, ejecutando el comando `dhcpd -t`.
+
+Reiniciar el servicio y observar las salidas generadas en el fichero de trazas `/var/log/syslog`.
+
+```bash
+systemctl restart isc-dhcp-server
+tail -fn100 /var/log/syslog
+```
+
 ## Creación de Unidades Organizativas, Grupos y Cuentas de Usuarios
 
 Las unidades organizativas son subdivisiones jerárquicas que agrupan entidades, tales como otras OUs, cuentas y grupos de usuarios, y ordenadores; facilitando la aplicación de políticas de grupos en un AD DC.
@@ -618,6 +1227,18 @@ Crear nueva Unidad Organizativa.
 
 ```bash
 samba-tool ou create 'OU=ACME,DC=example,DC=tld' --description='EXAMPLE.TLD Main Organizational Unit'
+```
+
+Crear la Unidad Organizativa `Workstations` para agrupar las estaciones de trabajo, perteneciente a `ACME`.
+
+```bash
+samba-tool ou create 'OU=Workstations,OU=ACME,DC=example,DC=tld' --description='Workstations Organizational Unit'
+```
+
+> **NOTA**: A medida que se vayan incorporando estaciones de trabajo al dominio, deben ser movidas hacia esta Unidad Organizativa, ejecutando el comando `samba-tool computer move computername <new_ou_dn>` ó utilizando la aplicación gráfica `Active Directory Users and Computers` disponible en el paquete de herramientas administrativas `RSAT`. Ejemplo:
+
+```bash
+samba-tool computer move PC-CLIENT1$ 'OU=Workstations,OU=ACME,DC=example,DC=tld'
 ```
 
 ### Creación de Grupos
@@ -665,27 +1286,36 @@ samba-tool group addmembers 'Group Policy Creator Owners' john.doe
 
 En los sistemas operativos Windows, una Política de Grupo (Group Policy Object - GPO) es un conjunto de configuraciones que define cómo debe lucir y comportarse el sistema para usuarios y/ó grupos de usuarios y ordenadores, previamente definidos y agrupados en OUs.
 
-Crear Política de Grupo para contraseñas.
+Configurar almacén central para definiciones de directivas.
 
 ```bash
-samba-tool gpo create 'ACME Domain Password Policy' -U 'administrator'%'P@s$w0rd.123'
+tar -xzmf PolicyDefinitions.tar.gz -C /var/lib/samba/sysvol/example.tld/Policies/
+chown -R 3000004.3000004 /var/lib/samba/sysvol/example.tld/Policies/
 ```
 
-Vincular política creada a Unidad Organizativa.
+> **NOTA**: El fichero [PolicyDefinitions.tar.gz](confs/addc/PolicyDefinitions.tar.gz) contine definiciones de directivas compatibles con sistemas operativos Windows hasta la versión 1809 de Windows 10. También están incorporadas las definiciones para el navegador Mozilla Firefox versión 62.x y superiores.
+
+Crear Política de Grupo para actualizaciones dinámicas `DHCP/DNS`.
 
 ```bash
-samba-tool gpo setlink 'OU=ACME,DC=example,DC=tld' {D8D44688-6D73-4850-8373-2B2B7294483A} -U 'administrator'%'P@s$w0rd.123'
+samba-tool gpo create 'DHCP with dynamic DNS updates Policy' -U 'administrator'%'P@s$w0rd.123'
+```
+
+Vincular `GPO` a Unidad Organizativa `Workstations`.
+
+```bash
+samba-tool gpo setlink 'OU=Workstations,OU=ACME,DC=example,DC=tld' {4E8A2506-32E1-4E66-B5A4-362B4ACD0DF0} -U 'administrator'%'P@s$w0rd.123'
 ```
 
 ### Comprobaciones
 
 ```bash
 samba-tool gpo listall
-samba-tool gpo listcontainers {D8D44688-6D73-4850-8373-2B2B7294483A} -U 'administrator'%'P@s$w0rd.123'
-samba-tool gpo getlink 'OU=ACME,DC=example,DC=tld' -U 'administrator'%'P@s$w0rd.123'
+samba-tool gpo listcontainers {4E8A2506-32E1-4E66-B5A4-362B4ACD0DF0} -U 'administrator'%'P@s$w0rd.123'
+samba-tool gpo getlink 'OU=Workstations,OU=ACME,DC=example,DC=tld' -U 'administrator'%'P@s$w0rd.123'
 ```
 
-**NOTA**: La modificación de los parámetros de las Políticas de Grupo se debe realizar mediante la aplicación gráfica `Group Policy Management` disponible en el paquete de herramientas administrativas `RSAT`.
+> **NOTA**: La modificación de los parámetros de las Políticas de Grupo se debe realizar mediante la aplicación gráfica `Group Policy Management` disponible en el paquete de herramientas administrativas `RSAT`.
 
 ## Instalación y configuración de Squid Proxy e integración con Samba AD DC
 
@@ -769,7 +1399,7 @@ mv /etc/squid/squid.conf{,.org}
 nano /etc/squid/squid.conf
 ```
 
-Configuración de Kerberos.
+Configuración de `Kerberos`.
 
 ```bash
 mv /etc/krb5.conf{,.org}
@@ -812,14 +1442,14 @@ msktutil -c -b "CN=Computers" \
     --verbose
 ```
 
-Establecer los permisos del archivo keytab.
+Establecer los permisos del archivo `keytab`.
 
 ```bash
 chown root:proxy /etc/krb5.keytab
 chmod 640 /etc/krb5.keytab
 ```
 
-Comprobar que Kerberos funciona.
+Comprobar que `Kerberos` funciona.
 
 ```bash
 kinit -k HTTP/proxy.example.tld
@@ -832,7 +1462,7 @@ Comprobar que la cuenta de host se actualice correctamente.
 msktutil --auto-update --verbose --computer-name proxy
 ```
 
-Agregar en crontab.
+Agregar en `crontab`.
 
 ```bash
 nano /etc/contrab
@@ -908,7 +1538,7 @@ http_access deny all
 
 ### Comprobaciones
 
-Usando autenticación Kerberos.
+Usando autenticación `Kerberos`.
 
 ```bash
 /usr/lib/squid/ext_kerberos_ldap_group_acl -a -g Internet -D EXAMPLE.TLD
@@ -1077,6 +1707,7 @@ samba-tool dns add localhost example.tld echo CNAME 'jb.example.tld' -U 'adminis
 samba-tool dns add localhost example.tld pubsub CNAME 'jb.example.tld' -U 'administrator'%'P@s$w0rd.123'
 samba-tool dns add localhost example.tld _xmpp-client._tcp SRV 'jb.example.tld 5222 5 0' -U 'administrator'%'P@s$w0rd.123'
 samba-tool dns add localhost example.tld _xmpp-server._tcp SRV 'jb.example.tld 5269 5 0' -U 'administrator'%'P@s$w0rd.123'
+samba-tool dns add localhost example.tld _xmpp-server._tcp.conference.example.tld SRV 'jb.example.tld 5269 5 0' -U 'administrator'%'P@s$w0rd.123'
 ```
 
 ### Comprobaciones
@@ -1085,8 +1716,9 @@ samba-tool dns add localhost example.tld _xmpp-server._tcp SRV 'jb.example.tld 5
 host -t SRV _xmpp-server._tcp.example.tld
 host -t SRV _xmpp-client._tcp.example.tld
 host -t A jb.example.tld
-dig -t SRV _xmpp-client._tcp.example.tld
-dig -t SRV _xmpp-server._tcp.example.tld
+dig -t SRV @example.tld _xmpp-client._tcp.example.tld
+dig -t SRV @example.tld _xmpp-server._tcp.example.tld
+dig -t SRV @example.tld _xmpp-server._tcp.conference.example.tld
 ```
 
 ### Integración con Samba AD DC
@@ -1144,7 +1776,7 @@ mod_shared_roster_ldap:
   ldap_groupdesc: "department"
   ldap_memberattr: "sAMAccountName"
   ldap_useruid: "sAMAccountName"
-  ldap_userdesc: "cn"
+  ldap_userdesc: "displayName"
   ldap_rfilter: "(objectClass=user)"
   ldap_filter: "(&(objectClass=person)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))"
 ```
@@ -1157,6 +1789,7 @@ Para Debian 9 Stretch.
 
 ```yml
 mod_vcard_ldap:
+  ldap_base: "OU=ACME,DC=example,DC=tld"
   ldap_uids: {"sAMAccountName": "%u"}
   matches: infinity
   ldap_vcard_map:
@@ -1170,6 +1803,7 @@ mod_vcard_ldap:
     "ORGUNIT": {"%s": ["department"]}
     "TITLE": {"%s": ["title"]}
     "TEL": {"%s": ["telephoneNumber"]}
+    "PHOTO": {"%s": ["jpegPhoto"]}
   ldap_search_fields:
     "User": "%u"
     "Full Name":  "displayName"
@@ -1185,6 +1819,7 @@ Para Debian 10 Buster.
 ```yml
 mod_vcard:
   db_type: ldap
+  ldap_base: "OU=ACME,DC=example,DC=tld"
   ldap_uids: {"sAMAccountName": "%u"}
   matches: infinity
   ldap_vcard_map:
@@ -1198,6 +1833,7 @@ mod_vcard:
     "ORGUNIT": {"%s": ["department"]}
     "TITLE": {"%s": ["title"]}
     "TEL": {"%s": ["telephoneNumber"]}
+    "PHOTO": {"%s": ["jpegPhoto"]}
   ldap_search_fields:
     "User": "%u"
     "Full Name":  "displayName"
@@ -1217,11 +1853,7 @@ systemctl status ejabberd
 
 ### Comprobaciones
 
-Acceder a la web admnistrativa que provee eJabberd desde un navegador, loguearse con un usuario administrador y revisar los parámetros de configuración establecidos.
-
-```bash
-https://jb.example.tld:5280/admin
-```
+Acceder a la web admnistrativa `https://jb.example.tld:5280/admin`, que provee eJabberd desde un navegador, loguearse con un usuario administrador y revisar los parámetros de configuración establecidos.
 
 Vale destacar que una vez intregado el servicio al AD DC, no es necesario realizar cambio alguno a los usuarios, por esta vía; pues son gestionados en el mismo AD DC.
 
@@ -1323,14 +1955,15 @@ Crear registros DNS.
 samba-tool dns add localhost example.tld mail A '192.168.0.4' -U 'administrator'%'P@s$w0rd.123'
 samba-tool dns add localhost 0.168.192.in-addr.arpa 4 PTR 'mail.example.tld.' -U 'administrator'%'P@s$w0rd.123'
 samba-tool dns add localhost example.tld @ MX 'mail.example.tld 10' -U 'administrator'%'P@s$w0rd.123'
-samba-tool dns add localhost example.tld @ TXT "'v=spf1 a:example.tld mx -all'" -U 'administrator'%'P@s$w0rd.123'
+samba-tool dns add localhost example.tld @ TXT '"v=spf1 a:example.tld mx -all"' -U 'administrator'%'P@s$w0rd.123'
+samba-tool dns add localhost example.tld mail._domainkey TXT '"v=DKIM1; h=sha256; k=rsa;" "p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtOXRUYAblt65ls/zAipF1CoOhe1+9So+n6LJ3GOJzU3xDT1/V+uf9snRAEmZletTOftARX7KMBYPBCVfFt1RBvSLYbvaKVQONgFR5mW60VTYvEhrChLtkUzWGSQsZswWxzOZYyxNR1spR2eF9RSnBTCgX763in+b0uIxhlbqiNCxC9C0JN9zL+DchJl2X0v6+p9xNb2Vmc5DU7" "87SujgNEZKVG5k4d7qDgy2mdIjg/q9BVOrBLRtMxtTIB7SymTo8SSTw31mWsl8uksgYqWSm1Fu61emPgafwCAya5ftqLpeAdPGgsoNLh242LWt5pXfbFKe8I/6HDAWCiHN7dnyewIDAQAB"' -U 'administrator'%'P@s$w0rd.123'
 samba-tool dns add localhost example.tld smtp CNAME 'mail.example.tld' -U 'administrator'%'P@s$w0rd.123'
 samba-tool dns add localhost example.tld pop3 CNAME 'mail.example.tld' -U 'administrator'%'P@s$w0rd.123'
 samba-tool dns add localhost example.tld imap CNAME 'mail.example.tld' -U 'administrator'%'P@s$w0rd.123'
 samba-tool dns add localhost example.tld webmail CNAME 'mail.example.tld' -U 'administrator'%'P@s$w0rd.123'
 samba-tool dns add localhost example.tld _smtp._tcp SRV 'mail.example.tld 25 5 0' -U 'administrator'%'P@s$w0rd.123'
 samba-tool dns add localhost example.tld _imaps._tcp SRV 'imap.example.tld 993 5 0' -U 'administrator'%'P@s$w0rd.123'
-samba-tool dns add localhost example.tld _pop3s._tcp SRV 'pop3.example.tld 995 20 0' -U 'administrator'%'P@s$w0rd.123'
+samba-tool dns add localhost example.tld _pop3s._tcp SRV 'pop3.example.tld 995 5 0' -U 'administrator'%'P@s$w0rd.123'
 samba-tool dns add localhost example.tld _submission._tcp SRV 'smtp.example.tld 587 5 0' -U 'administrator'%'P@s$w0rd.123'
 ```
 
@@ -1482,7 +2115,7 @@ result_attribute = userPrincipalName
 debuglevel = 0
 ```
 
-NOTA: El atributo `otherMailbox` puede editarse utilizando el comando `samba-tool user edit <username>` o mediante las herramientas administrativas GUI `RSAT` o `Apache Directory Studio`.
+> **NOTA**: El atributo `otherMailbox` puede editarse utilizando el comando `samba-tool user edit <username>` o mediante las herramientas administrativas GUI `RSAT` o `Apache Directory Studio`.
 
 Habilitar puerto seguro `TCP\587 Submission` y establecer comunicación con `dovecot`.
 
@@ -1588,7 +2221,7 @@ pass_attrs = userPassword=password
 default_pass_scheme = CRYPT
 ```
 
-**NOTA**: El atributo `maxStorage` puede editarse utilizando el comando `samba-tool user edit <username>` o mediante las herramientas administrativas GUI `RSAT` o `Apache Directory Studio`.
+> **NOTA**: El atributo `maxStorage` puede editarse utilizando el comando `samba-tool user edit <username>` o mediante las herramientas administrativas GUI `RSAT` o `Apache Directory Studio`.
 
 Reiniciar el servicio.
 
@@ -1612,7 +2245,7 @@ find /opt/roundcube/ -type f \-exec chmod 0644 {} \;
 chmod 0770 /opt/roundcube/{logs,temp}
 ```
 
-> **Actualización**
+> Actualización
 >
 >```bash
 >tar -xzf roundcubemail-*-complete.tar.gz
@@ -1649,7 +2282,7 @@ psql -h localhost -U postgres -W -f /opt/roundcube/SQL/postgres.initial.sql roun
 Instalar servidor web `Nginx`.
 
 ```bash
-apt install nginx-full php-fpm php-pear php-mbstring php-intl php-ldap php-gd php-imagick php-pgsql
+apt install nginx-full php-fpm php-pear php-mbstring php-intl php-ldap php-gd php-imagick php-pgsql php-curl php-json php-xml php-bz2 php-zip
 ```
 
 Definir zona horaria.
@@ -1755,7 +2388,7 @@ ln -s /etc/nginx/sites-available/roundcube /etc/nginx/sites-enabled/
 Instalar servidor web `Apache2`.
 
 ```bash
-apt install apache2 libapache2-mod-php php-pear php-mbstring php-intl php-ldap php-gd php-imagick php-pgsql
+apt install apache2 libapache2-mod-php php-pear php-mbstring php-intl php-ldap php-gd php-imagick php-pgsql php-curl php-json php-xml php-bz2 php-zip
 ```
 
 Definir zona horaria.
@@ -1776,7 +2409,6 @@ nano /etc/apache2/sites-available/roundcube.conf
     RewriteCond %{HTTPS} =off
     RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [QSA,L,R=301]
 </VirtualHost>
-
 <IfModule mod_ssl.c>
     <VirtualHost *:443>
         ServerName webmail.example.tld
@@ -1829,7 +2461,6 @@ nano /opt/roundcube/config/config.inc.php
 ```php
 // Database
 $config['db_dsnw'] = 'pgsql://postgres:<contraseña-usuario-postgres>@localhost/roundcubemail';
-
 // Samba AD DC Address Book
 $config['autocomplete_addressbooks'] = array(
     'sql',
@@ -1893,9 +2524,11 @@ $config['ldap_public']["global_ldap_abook"] = array(
 ## Comandos y herramientas útiles
 
 * `samba-tool` (herramienta principal para administración `samba`)
+* `testparam|samba-tool testparm` (chequeo errores de configuración `samba`)
 * `wbinfo` (consultar información utilizando `windbind`)
 * `pdbedit` (manipular base datos de usuarios `samba`)
 * `ldapsearch` (consultar servicios de directorios `LDAP`)
+* `dhcpd -t` (chequeo errores de configuración `isc-dhcp-server`)
 * `RSAT` (herramientas administración servidor remoto `windows`)
 * `Apache Directory Studio` (herramienta administración servicios de directorio `LDAP`)
 * `named-checkconf` (chequeo errores de configuración `bind9`)
@@ -1918,10 +2551,13 @@ La integración de los servicios descritos en esta guía, también son funcional
 
 ## Referencias
 
-### Samba AD DC+Bind9 DNS Server
+### Samba AD DC+Bind9 DNS Server+DHCP
 
 * [Setting up Samba as an Active Directory Domain Controller](https://wiki.samba.org/index.php/Setting_up_Samba_as_an_Active_Directory_Domain_Controller)
 * [Samba changelog: strong auth required](https://wiki.samba.org/index.php/Samba_4.4_Features_added/changed#ldap_server_require_strong_auth_.28G.29)
+* [Configure DHCP to update DNS records with BIND9](https://wiki.samba.org/index.php/Configure_DHCP_to_update_DNS_records_with_BIND9)
+* [Setting up a BIND DNS Server](https://wiki.samba.org/index.php/Setting_up_a_BIND_DNS_Server)
+* [Password Settings Objects](https://wiki.samba.org/index.php/Password_Settings_Objects)
 * [PDC sencillo con Samba 4 Debian 9](https://admlinux.cubava.cu/2018/02/21/pdc-sencillo-con-samba-4-en-debian-9/)
 * [Active Directory Domain Controller con Samba4 + Bind9 y Delegación de zona Actualizado](http://admlinux.cubava.cu/2019/01/14/addc-con-samba4-bind9-y-delegacion-de-zona/)
 * [PDC + Samba 4 + DLZ o PDC con Samba4 y delegación de zona Debian9](http://admlinux.cubava.cu/2018/02/27/pdc-con-samba-4-dlz-en-debian-9/)
@@ -1937,6 +2573,11 @@ La integración de los servicios descritos en esta guía, también son funcional
 * [Samba 4 como Controlador de Dominios AD DC en Debian 9](https://usuariodebian.blogspot.com/2019/04/samba-4-como-controlador-de-dominios-ad.html)
 * [Setting up a Samba 4 Domain Controller on Debian 9](https://jonathonreinhart.com/posts/blog/2019/02/11/setting-up-a-samba-4-domain-controller-on-debian-9/)
 * [Raising the Functional Levels](https://wiki.samba.org/index.php/Raising_the_Functional_Levels)
+* [How to Configure Group Policy Central Store](https://activedirectorypro.com/configure-group-policy-central-store/)
+* [ Active Directory - Creating a Group Policy Central Store](https://www.petri.com/creating-group-policy-central-store)
+* [GPO Backup and Restore](https://wiki.samba.org/index.php/GPO_Backup_and_Restore)
+* [Create an Active Directory Infrastructure with Samba4 on Ubuntu – Part 1](https://www.tecmint.com/install-samba4-active-directory-ubuntu/)
+* [Manage Samba4 Active Directory Infrastructure from Windows10 via RSAT – Part 3](https://www.tecmint.com/manage-samba4-ad-from-windows-via-rsat/)
 
 ### Squid Proxy Server
 

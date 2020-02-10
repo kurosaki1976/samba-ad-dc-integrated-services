@@ -1,11 +1,39 @@
 options {
-	directory "/var/cache/bind";
-	forwarders { 8.8.8.8; 8.8.4.4; };
-	forward first;
-	dnssec-validation no;
-	auth-nxdomain no;
-	listen-on-v6 { none; };
-	tkey-gssapi-keytab "/var/lib/samba/private/dns.keytab";
-	allow-query { any; };
-	recursion yes;
+    version none;
+    hostname none;
+    server-id none;
+    directory "/var/cache/bind";
+    forwarders { 8.8.8.8; 8.8.4.4; };
+    forward first;
+    auth-nxdomain yes;
+    dnssec-enable no;
+    dnssec-validation no;
+    dnssec-lookaside no;
+    listen-on-v6 { none; };
+    listen-on port 53 { 127.0.0.1; 192.168.0.1; };
+    tkey-gssapi-keytab "/var/lib/samba/private/dns.keytab";
+    allow-query { 192.168.0.0/24; 127.0.0.1; };
+    recursion yes;
+    allow-recursion { 192.168.0.0/24; 127.0.0.1; };
+    allow-update { 192.168.0.0/24; 127.0.0.1; };
+    datasize default;
+    empty-zones-enable no;
+    minimal-responses yes;
+};
+
+controls {
+    inet 127.0.0.1 port 953
+    allow { localhost; 192.168.0.1; } keys { rndc-key; };
+};
+
+logging {
+    channel xfer-log {
+        file "/var/log/named.log";
+        print-category yes;
+        print-severity yes;
+        severity info;
+    };
+    category xfer-in { xfer-log; };
+    category xfer-out { xfer-log; };
+    category notify { xfer-log; };
 };

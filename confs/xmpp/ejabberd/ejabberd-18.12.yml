@@ -232,6 +232,7 @@ modules:
       "ORGUNIT": {"%s": ["department"]}
       "TITLE": {"%s": ["title"]}
       "TEL": {"%s": ["telephoneNumber"]}
+      "AVATAR": {"%s": ["jpegPhoto"]}
     ldap_search_fields:
       "User": "%u"
       "Full Name": "displayName"

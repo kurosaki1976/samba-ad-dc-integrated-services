@@ -31,7 +31,7 @@ broken_sasl_auth_clients = yes
 smtp_tls_security_level = may
 smtpd_tls_ask_ccert = yes
 smtpd_tls_security_level = may
-smtpd_tls_auth_only = no
+smtpd_tls_auth_only = yes
 smtp_tls_note_starttls_offer = yes
 smtp_tls_loglevel = 1
 smtpd_tls_loglevel = 1
@@ -107,7 +107,7 @@ smtpd_reject_unlisted_sender = yes
 
 ### SMTPD HELO RESTRICTIONS
 smtpd_helo_required = yes
-smtp_helo_name = $myhostname
+smtp_helo_name = $mydomain
 smtpd_helo_restrictions =
     permit_mynetworks
     reject_non_fqdn_helo_hostname
@@ -135,6 +135,7 @@ smtpd_recipient_overshoot_limit = $smtpd_recipient_limit
 smtpd_recipient_restrictions =
     reject_unauth_pipelining
     reject_unknown_recipient_domain
+    reject_unauth_destination
     reject_non_fqdn_recipient
     reject_unlisted_recipient
     permit_mynetworks
