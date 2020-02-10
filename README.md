@@ -112,6 +112,8 @@ Tendiendo en cuenta esto, se pautan las siguientes premisas:
 * Nombre de dominio: `example.tld`
 * Los hosts miembros del dominio deben usar Samba AD DC como servidor DNS y de tiempo.
 
+> **NOTA**: La última premisa se logrará mediante la implementación de un servidor `DHCP` que permita las asiganción de parámetros de red dinámicos.
+
 ## Configuración de los parámetros de red
 
 ### Samba AD DC Server
