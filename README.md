@@ -41,7 +41,7 @@
   - [Creación de Grupos](#creación-de-grupos)
   - [Creación de Cuentas de Usuarios](#creación-de-cuentas-de-usuarios)
 - [Creación de Políticas de Grupos (Group Policy Object - GPO)](#creación-de-políticas-de-grupos-group-policy-object---gpo)
-  - [Comprobaciones](#comprobaciones-3)
+  - [Comprobaciones](#comprobaciones-4)
 - [Instalación y configuración de Squid Proxy e integración con Samba AD DC](#instalación-y-configuración-de-squid-proxy-e-integración-con-samba-ad-dc)
   - [Instalación de paquetes necesarios](#instalación-de-paquetes-necesarios-1)
   - [Integración con Samba AD DC](#integración-con-samba-ad-dc-2)
