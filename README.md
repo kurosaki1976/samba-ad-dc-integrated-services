@@ -34,33 +34,33 @@
   - [Comprobaciones](#comprobaciones-2)
 - [Configuración del servidor DHCP](#configuración-del-servidor-dhcp)
   - [Integración con Samba AD DC](#integración-con-samba-ad-dc-1)
-  - [Integración con Bind9 DNS](#integración-con-bind9-dns)
+  - [Integración con Bind9 DNS](#integración-con-bind9-dns-2)
   - [Comprobaciones](#comprobaciones-3)
 - [Creación de Unidades Organizativas, Grupos y Cuentas de Usuarios](#creación-de-unidades-organizativas-grupos-y-cuentas-de-usuarios)
   - [Creación de Unidades Organizativas (Organizational Units - OU)](#creación-de-unidades-organizativas-organizational-units---ou)
   - [Creación de Grupos](#creación-de-grupos)
   - [Creación de Cuentas de Usuarios](#creación-de-cuentas-de-usuarios)
 - [Creación de Políticas de Grupos (Group Policy Object - GPO)](#creación-de-políticas-de-grupos-group-policy-object---gpo)
-  - [Comprobaciones](#comprobaciones-4)
+  - [Comprobaciones](#comprobaciones-3)
 - [Instalación y configuración de Squid Proxy e integración con Samba AD DC](#instalación-y-configuración-de-squid-proxy-e-integración-con-samba-ad-dc)
   - [Instalación de paquetes necesarios](#instalación-de-paquetes-necesarios-1)
-  - [Integración con Samba AD DC](#integración-con-samba-ad-dc-3)
-  - [Comprobaciones](#comprobaciones-5)
+  - [Integración con Samba AD DC](#integración-con-samba-ad-dc-2)
+  - [Comprobaciones](#comprobaciones-4)
 - [Instalación y configuración de eJabberd XMPP Server e integración con Samba AD DC](#instalación-y-configuración-de-ejabberd-xmpp-server-e-integración-con-samba-ad-dc)
   - [Instalación de paquetes necesarios](#instalación-de-paquetes-necesarios-2)
   - [Creación de registros DNS](#creación-de-registros-dns)
-  - [Comprobaciones](#comprobaciones-6)
+  - [Comprobaciones](#comprobaciones-5)
   - [Integración con Samba AD DC](#integración-con-samba-ad-dc-3)
   - [Configuración del servicio](#configuración-del-servicio)
   - [Compartir el roster de los usuarios](#compartir-el-roster-de-los-usuarios)
   - [Personalizar vCard de los usuarios](#personalizar-vcard-de-los-usuarios)
-  - [Comprobaciones](#comprobaciones-7)
+  - [Comprobaciones](#comprobaciones-6)
 - [Instalación y configuración de Postfix/Dovecot Mail Server e integración con Samba AD DC.](#instalación-y-configuración-de-postfixdovecot-mail-server-e-integración-con-samba-ad-dc)
   - [Instalación de paquetes necesarios](#instalación-de-paquetes-necesarios-3)
   - [Configuración del sistema](#configuración-del-sistema)
   - [Integración con Samba AD DC](#integración-con-samba-ad-dc-4)
   - [Configuración de Postfix](#configuración-de-postfix)
-    - [Comprobaciones](#comprobaciones-8)
+    - [Comprobaciones](#comprobaciones-7)
   - [Configuración del servicio Dovecot](#configuración-del-servicio-dovecot)
     - [Integración con Samba AD DC](#integración-con-samba-ad-dc-5)
   - [Configuración del servicio Webmail](#configuración-del-servicio-webmail)
@@ -71,6 +71,7 @@
   - [Squid Proxy Server](#squid-proxy-server-2)
   - [eJabberd XMPP Server](#ejabberd-xmpp-server-2)
   - [Postfix/Dovecot/Roundcube Mail Server](#postfixdovecotroundcube-mail-server-2)
+  - [Proxmox VE](#proxmox-2)
 - [Anexos](#anexos)
   - [Ficheros de configuración prinicipal Squid+Samba AD DC]
     - [Debian 9 Stretch Squid 3.5](confs/proxy/squid/squid-3.5.conf)
@@ -359,7 +360,6 @@ nano /etc/samba/smb.conf
     workgroup = EXAMPLE
     idmap_ldb:use rfc2307 = yes
     ldap server require strong auth = no
-    log level = 3
     printing = bsd
     printcap name = /dev/null
 [netlogon]
@@ -701,7 +701,7 @@ chmod 400 /etc/dhcp/dhcpd.keytab
 Crear el fichero `/etc/dhcp/dhcpd-update-samba-dns.conf`, que contendrá las variables a utilizarse para la actualización de los registros `DNS`.
 
 ```bash
-/etc/dhcpd/dhcpd-update-samba-dns.conf
+nano /etc/dhcp/dhcpd-update-samba-dns.conf
 
 # Variables
 KRB5CC="/run/dhcpd.krb5cc"
@@ -1022,7 +1022,7 @@ chmod +x /etc/dhcp/dhcpd-update-dns.sh /usr/bin/samba-dnsupdate.sh
 Crear fichero principal del servicio `DHCP`.
 
 ```bash
-mv /etc/dhcp/dhcpd.conf
+mv /etc/dhcp/dhcpd.conf{,.org}
 ```
 
 ```bash
@@ -1071,7 +1071,6 @@ shared-network EXAMPLE {
       set ClientName = pick-first-value(option host-name, host-decl-name);
       execute("/etc/dhcp/dhcpd-update-dns.sh", "delete", ClientIP, ClientName);
     }
-
   }
 }
 ```
@@ -1295,7 +1294,7 @@ tar -xzmf PolicyDefinitions.tar.gz -C /var/lib/samba/sysvol/example.tld/Policies
 chown -R 3000004.3000004 /var/lib/samba/sysvol/example.tld/Policies/
 ```
 
-> **NOTA**: El fichero [PolicyDefinitions.tar.gz](confs/addc/PolicyDefinitions.tar.gz) contine definiciones de directivas compatibles con sistemas operativos Windows hasta la versión 1809 de Windows 10. También están incorporadas las definiciones para el navegador Mozilla Firefox versión 62.x y superiores.
+> **NOTA**: El fichero [PolicyDefinitions.tar.gz](confs/addc/PolicyDefinitions.tar.gz) contine definiciones de directivas compatibles con sistemas operativos Windows hasta la versión 1809 de Windows 10. También están incorporadas las definiciones para el navegador Mozilla Firefox versión 60 y superiores; así como el cliente de correo electrónico Thunderbird versión 68 y superiores.
 
 Crear Política de Grupo para actualizaciones dinámicas `DHCP/DNS`.
 
@@ -1467,7 +1466,7 @@ msktutil --auto-update --verbose --computer-name proxy
 Agregar en `crontab`.
 
 ```bash
-nano /etc/contrab
+nano /etc/crontrab
 
 59 23 * * * root msktutil --auto-update --verbose --computer-name proxy > /dev/null 2>&1
 ```
@@ -1479,12 +1478,12 @@ Crear nueva Cuenta de Usuario para el servicio `squid`.
 Esta cuenta sería usada para propiciar la autenticación básica LDAP en caso de fallar Kerberos ó para uso de gestores de descargas no compatibles con Kerberos ó en aquellas estaciones que no están unidas al dominio.
 
 ```bash
-samba-tool user create 'squid3' 'P@s$w0rd.789' \
+samba-tool user create 'squid' 'P@s$w0rd.789' \
     --surname='Proxy Service' \
-    --given-name='Squid3' \
+    --given-name='Squid' \
     --company='EXAMPLE' \
-    --description='Squid3 Proxy Service Account'
-samba-tool user setexpiry squid3 --noexpiry
+    --description='Squid Proxy Service Account'
+samba-tool user setexpiry squid --noexpiry
 ```
 
 Editar el fichero `/etc/squid/squid.conf` y agregar los métodos de autenticación.
@@ -1500,7 +1499,7 @@ auth_param negotiate children 20 startup=0 idle=1
 auth_param negotiate keep_alive off
 
 # Basic LDAP authentication (fallback)
-auth_param basic program /usr/lib/squid/basic_ldap_auth -R -b "dc=example,dc=tld" -D squid3@example.tld -w "P@s$w0rd.789" -f (|(userPrincipalName=%s)(sAMAccountName=%s)) -h dc.example.tld
+auth_param basic program /usr/lib/squid/basic_ldap_auth -R -b "dc=example,dc=tld" -D squid@example.tld -w "P@s$w0rd.789" -f (|(userPrincipalName=%s)(sAMAccountName=%s)) -h dc.example.tld
 auth_param basic children 10
 auth_param basic realm PROXY.EXAMPLE.TLD
 auth_param basic credentialsttl 8 hours
@@ -1519,7 +1518,7 @@ acl internet external INTERNET
 acl unrestricted external UNRESTRICTED
 
 # LDAP group mapping
-external_acl_type memberof %LOGIN /usr/lib/squid/ext_ldap_group_acl -R -K -S -b "dc=example,dc=tld" -D squid3@example.tld -w "P@s$w0rd.789" -f "(&(objectClass=person)(sAMAccountName=%v)(memberof=cn=%g,ou=Proxy,ou=ACME,dc=example,dc=tld))" -h dc.example.tld
+external_acl_type memberof %LOGIN /usr/lib/squid/ext_ldap_group_acl -R -K -S -b "dc=example,dc=tld" -D squid@example.tld -w "P@s$w0rd.789" -f "(&(objectClass=person)(sAMAccountName=%v)(memberof=cn=%g,ou=Proxy,ou=ACME,dc=example,dc=tld))" -h dc.example.tld
 acl LDAPintranet external memberof Intranet
 acl LDAPinternet external memberof Internet
 acl LDAPunrestricted external memberof Unrestricted
@@ -1549,7 +1548,7 @@ Usando autenticación `Kerberos`.
 Usando autenticación básica LDAP.
 
 ```bash
-/usr/lib/squid/basic_ldap_auth -R -b "dc=example,dc=tld" -D squid3@example.tld -w "P@s$w0rd.789" -f sAMAccountName=%s -h dc.example.tld
+/usr/lib/squid/basic_ldap_auth -R -b "dc=example,dc=tld" -D squid@example.tld -w "P@s$w0rd.789" -f sAMAccountName=%s -h dc.example.tld
 ```
 
 Membresía de grupos LDAP.
@@ -1736,6 +1735,18 @@ samba-tool user create 'ejabberd' 'P@s$w0rd.012' \
 samba-tool user setexpiry ejabberd --noexpiry
 ```
 
+Crear Grupo de Usuarios de mensajería instantánea.
+
+```bash
+samba-tool group add XMPP --groupou='OU=ACME' --description='XMPP Users Group'
+```
+
+Añadir usuarios al grupo `XMPP`.
+
+```bash
+samba-tool group addmembers 'XMPP' john.doe,sheldon,leonard,rajesh
+```
+
 ### Configuración del servicio.
 
 Definir cuenta de usuario con acceso administrativo al servicio.
@@ -1764,7 +1775,7 @@ ldap_rootdn: "ejabberd@example.tld"
 ldap_password: "P@s$w0rd.012"
 ldap_base: "OU=ACME,DC=example,DC=tld"
 ldap_uids: {"sAMAccountName": "%u"}
-ldap_filter: "(&(objectClass=person)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))"
+ldap_filter: "(&(memberOf=CN=XMPP,OU=ACME,DC=example,DC=tld)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))"
 ```
 
 ### Compartir el roster de los usuarios
@@ -2576,6 +2587,7 @@ La integración de los servicios descritos en esta guía, también son funcional
 * [Setting up a Samba 4 Domain Controller on Debian 9](https://jonathonreinhart.com/posts/blog/2019/02/11/setting-up-a-samba-4-domain-controller-on-debian-9/)
 * [Raising the Functional Levels](https://wiki.samba.org/index.php/Raising_the_Functional_Levels)
 * [Samba/Active Directory domain controller - ArchWiki](https://wiki.archlinux.org/index.php/Samba/Active_Directory_domain_controller)
+* [ISC DHCP Server - Debian Wiki](https://wiki.debian.org/DHCP_Server)
 * [How to Configure Group Policy Central Store](https://activedirectorypro.com/configure-group-policy-central-store/)
 * [ Active Directory - Creating a Group Policy Central Store](https://www.petri.com/creating-group-policy-central-store)
 * [GPO Backup and Restore](https://wiki.samba.org/index.php/GPO_Backup_and_Restore)
@@ -2607,6 +2619,9 @@ La integración de los servicios descritos en esta guía, también son funcional
 * [Making ejabberd 14.12 work with Microsoft Windows Active Directory](http://s.co.tt/2015/02/05/making-ejabberd-14-12-work-with-microsoft-windows-active-directory-ldap/)
 * [Remote authentication of users using Active Directory](https://support.freshservice.com/support/solutions/articles/169196-setting-up-active-directory-single-sign-on-sso-for-remote-authentication)
 * [Ejabberd + Samba4 + Shared Roster](https://admlinux.cubava.cu/2019/03/04/ejabberd-samba4-shared-roster/)
+* [Install ejabberd with Active Directory SSO backend](https://twistedlinux.wordpress.com/2016/02/11/install-ejabberd-with-active-directory-sso-backend/)
+* [Authenticate Against SASL GSSAPI](https://www.ejabberd.im/cyrsasl_gssapi/index.html)
+* [Ejabberd with GSSAPI support](https://launchpad.net/~metlov/+archive/ubuntu/ejabberd-gssapi)
 
 ### Postfix/Dovecot/Roundcube Mail Server
 
@@ -2625,3 +2640,9 @@ La integración de los servicios descritos en esta guía, también son funcional
 * [Virtual user mail system with Postfix, Dovecot and Roundcube - ArchWiki](https://wiki.archlinux.org/index.php/Virtual_user_mail_system_with_Postfix,_Dovecot_and_Roundcube)
 * [Postfix with Samba AD-DC – ADHainesTech.ca](http://adhainestech.ca/postfix-with-samba-ad-dc/)
 * [Shared Address Book (LDAP) - Linux Home Server HOWTO](https://www.brennan.id.au/20-Shared_Address_Book_LDAP.html)
+* [Authenticating Dovecot against Active Directory](https://wiki.samba.org/index.php/Authenticating_Dovecot_against_Active_Directory)
+* [Authentication/Kerberos -Dovecot Wiki](https://wiki.dovecot.org/Authentication/Kerberos)
+
+### Proxmox VE
+
+* [apache2.service: Failed to set up mount namespacing: Permission denied](https://forum.proxmox.com/threads/apache2-service-failed-to-set-up-mount-namespacing-permission-denied.56871/)
