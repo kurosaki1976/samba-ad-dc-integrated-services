@@ -293,6 +293,8 @@ timedatectl status
 journalctl --since -1h -u systemd-timesyncd
 ```
 
+> **NOTA**: Es recomendable hacer coincidir la zona horaria de los `hosts` de acuerdo a la región en cuestión, ejecutando el comando `dpkg-reconfigure tzdata`. En plantillas de contenedores Debian 9/10, deben redefinirse los parámetros de idioma, mediante `dpkg-reconfigure locales` y luego de escoger el idioma de preferencia, ejecutar `locale-gen`, y reiniciar el `CT`.
+
 ## Instalación y configuración de Samba4 como AD DC
 
 Las distribucións de Debian 9/10 cuentan en sus repositorios de paquetes con las versiones de Samba 4.5.16 y 4.9.5, respectivamente; las cuales no contienen algunas mejoras para la gestión de Unidades Organizativas mediante la herramienta `samba-tool`. Es por ello que se recomienda usar un repositorio de paquetes de la versión 4.9.6 o superior. En esta guía se usará el que proporciona el grupo francés [Tranquil IT Systems](http://samba.tranquil.it/debian/).
@@ -518,9 +520,9 @@ options {
     directory "/var/cache/bind";
     forwarders { 8.8.8.8; 8.8.4.4; };
     forward first;
-    dnssec-enable no;
-    dnssec-validation no;
-    dnssec-lookaside no;
+    dnssec-enable yes;
+    dnssec-validation yes;
+    dnssec-lookaside auto;
     auth-nxdomain yes;
     listen-on-v6 { none; };
     tkey-gssapi-keytab "/var/lib/samba/private/dns.keytab";
@@ -529,6 +531,7 @@ options {
     allow-update { 192.168.0.0/24; 127.0.0.1; };
     datasize default;
     empty-zones-enable no;
+    minimal-responses yes;
 };
 
 logging {
@@ -589,8 +592,8 @@ Comprobar registros DNS necesarios para el funcionamiento correcto de Samba AD D
 
 ```bash
 dig example.tld
+dig -x 192.168.0.1 @127.0.0.1 +short
 host -t A dc.example.tld
-host 192.168.0.1
 host -t SRV _kerberos._udp.example.tld
 host -t SRV _ldap._tcp.example.tld
 ```
@@ -1882,7 +1885,7 @@ tail -fn100 /var/log/ejabberd/ejabberd.log
 
 ```bash
 export DEBIAN_FRONTEND=noninteractive
-apt install postfix-pcre postfix-ldap dovecot-core dovecot-ldap dovecot-pop3d dovecot-imapd dovecot-lmtpd ldap-utils mailutils
+apt install postfix-pcre postfix-ldap postfix-policyd-spf-python dovecot-core dovecot-ldap dovecot-pop3d dovecot-imapd dovecot-lmtpd ldap-utils mailutils
 unset DEBIAN_FRONTEND
 ```
 
@@ -2548,7 +2551,7 @@ $config['ldap_public']["global_ldap_abook"] = array(
 * `squid -kp` (chequeo errores de configuración `squid`)
 * `postconf` (herramienta principal de configuración `postfix`)
 * `postfix check` (chequeo errores de configuración `postfix`)
-* `dovecot -a` (muestra los parámetros configurados)
+* `doveconf -n` (muestra los parámetros configurados)
 * `nginx -t` (chequeo errores de configuración `nginx`)
 * `apache2ctl configtest` (chequeo errores de configuración `apache2`)
 
@@ -2556,7 +2559,7 @@ $config['ldap_public']["global_ldap_abook"] = array(
 
 Todas las configuraciones expuestas en esta guía han sido probadas satisfactoriamente -si los pasos descritos se siguen a cabalidad-, en contenedores (CT) y máquinas virtuales (VM), gestionadas con Proxmox v5/v6.
 
-Los CTs que ejecuten servicios que utilicen autenticación Kerberos, deben crearse con las características `fuse` y la opción `Unprivileged mode` desmarcada.
+Los CTs que ejecuten servicios que utilicen autenticación Kerberos, deben crearse con las características `fuse`, `nesting` y la opción `Unprivileged mode` desmarcada.
 
 En CTs para que el servidor Samba AD DC funcione correctamente; además de lo descrito en el párrafo anterior, debe activarse la característica `cifs`.
 
