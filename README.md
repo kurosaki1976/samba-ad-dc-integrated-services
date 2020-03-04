@@ -71,7 +71,7 @@
   - [Squid Proxy Server](#squid-proxy-server-2)
   - [eJabberd XMPP Server](#ejabberd-xmpp-server-2)
   - [Postfix/Dovecot/Roundcube Mail Server](#postfixdovecotroundcube-mail-server-2)
-  - [Proxmox VE](#proxmox-2)
+  - [Proxmox VE](#proxmox-ve)
 - [Anexos](#anexos)
   - [Ficheros de configuración prinicipal Squid+Samba AD DC]
     - [Debian 9 Stretch Squid 3.5](confs/proxy/squid/squid-3.5.conf)
