@@ -1436,14 +1436,8 @@ Generar archivo keytab.
 
 ```bash
 kinit Administrator@EXAMPLE.TLD
-msktutil -c -b "CN=Computers" \
-    -s HTTP/proxy.example.tld \
-    -h proxy.example.tld \
-    -k /etc/krb5.keytab \
-    --computer-name PROXY \
-    --upn HTTP/proxy.example.tld \
-    --server dc.example.tld \
-    --verbose
+
+msktutil -c -b "CN=Computers" -s HTTP/proxy.example.tld -h proxy.example.tld -k /etc/krb5.keytab --computer-name PROXY --upn HTTP/proxy.example.tld --server dc.example.tld --verbose
 ```
 
 Establecer los permisos del archivo `keytab`.
