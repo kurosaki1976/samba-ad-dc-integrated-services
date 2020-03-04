@@ -293,7 +293,7 @@ timedatectl status
 journalctl --since -1h -u systemd-timesyncd
 ```
 
-> **NOTA**: Es recomendable hacer coincidir la zona horaria de los `hosts` de acuerdo a la región en cuestión, ejecutando el comando `dpkg-reconfigure tzdata`. En plantillas de contenedores Debian 9/10, deben redefinirse los parámetros de idioma, mediante `dpkg-reconfigure locales` y luego de escoger el idioma de preferencia, ejecutar `locale-gen`, y reiniciar el `CT`.
+> **NOTA**: Es recomendable hacer coincidir la zona horaria de los `hosts` de acuerdo a la región en cuestión, ejecutando el comando `dpkg-reconfigure tzdata`. En plantillas de contenedores `Debian 9/10`, deben redefinirse los parámetros de idioma, mediante `dpkg-reconfigure locales` y luego de escoger el idioma de preferencia, ejecutar `locale-gen`, y reiniciar el `CT`.
 
 ## Instalación y configuración de Samba4 como AD DC
 
@@ -2649,3 +2649,5 @@ La integración de los servicios descritos en esta guía, también son funcional
 ### Proxmox VE
 
 * [apache2.service: Failed to set up mount namespacing: Permission denied](https://forum.proxmox.com/threads/apache2-service-failed-to-set-up-mount-namespacing-permission-denied.56871/)
+* [[SOLVED] Problem LXC mariadb debian 10](https://forum.proxmox.com/threads/problem-lxc-mariadb-debian-10.55926/)
+* [LXC - perl: warning: Setting locale failed](https://forum.proxmox.com/threads/lxc-perl-warning-setting-locale-failed.32173/)
