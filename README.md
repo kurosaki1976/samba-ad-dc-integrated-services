@@ -518,11 +518,15 @@ options {
     hostname none;
     server-id none;
     directory "/var/cache/bind";
+    max-cache-size 10m;
+    cleaning-interval 15;
+    max-cache-ttl 60;
+    max-ncache-ttl 60;
     forwarders { 8.8.8.8; 8.8.4.4; };
     forward first;
     dnssec-enable yes;
     dnssec-validation yes;
-    dnssec-lookaside auto;
+    dnssec-lookaside no;
     auth-nxdomain yes;
     listen-on-v6 { none; };
     tkey-gssapi-keytab "/var/lib/samba/private/dns.keytab";
@@ -624,8 +628,8 @@ statistics loopstats peerstats clockstats
 filegen loopstats file loopstats type day enable
 filegen peerstats file peerstats type day enable
 filegen clockstats file clockstats type day enable
-server 127.127.1.1
-fudge 127.127.1.1 stratum 12
+server 127.127.1.0
+fudge 127.127.1.0 stratum 10
 server ntp.tld iburst prefer
 ntpsigndsocket /var/lib/samba/ntp_signd
 restrict -4 default kod notrap nomodify nopeer noquery mssntp
@@ -634,8 +638,9 @@ restrict dc.example.tld mask 255.255.255.255 nomodify notrap nopeer noquery
 restrict 127.0.0.1
 restrict ::1
 restrict source notrap nomodify noquery
-broadcast 192.168.0.255
-panic 0
+broadcast 192.168.0.255 ttl 4
+broadcastdelay 0.004
+tinker panic 0
 ```
 
 Establecer permisos.
@@ -1436,8 +1441,14 @@ Generar archivo keytab.
 
 ```bash
 kinit Administrator@EXAMPLE.TLD
-
-msktutil -c -b "CN=Computers" -s HTTP/proxy.example.tld -h proxy.example.tld -k /etc/krb5.keytab --computer-name PROXY --upn HTTP/proxy.example.tld --server dc.example.tld --verbose
+msktutil -c -b "CN=Computers" \
+    -s HTTP/proxy.example.tld \
+    -h proxy.example.tld \
+    -k /etc/krb5.keytab \
+    --computer-name PROXY \
+    --upn HTTP/proxy.example.tld \
+    --server dc.example.tld \
+    --verbose
 ```
 
 Establecer los permisos del archivo `keytab`.
@@ -1552,10 +1563,10 @@ Membresía de grupos LDAP.
 
 ```bash
 /usr/lib/squid/ext_ldap_group_acl -R -K -S -b "dc=example,dc=tld" \
-    -D squid3@example.tld -w "P@s$w0rd.789" \
+    -D squid@example.tld -w "P@s$w0rd.789" \
     -f "(&(objectClass=person)(sAMAccountName=%v)\
         (memberof=cn=%g,ou=Proxy,ou=ACME,dc=example,dc=tld))" \
-    -h dc.example.tld`
+    -h dc.example.tld
 ```
 
 Analizando trazas de navegación.
