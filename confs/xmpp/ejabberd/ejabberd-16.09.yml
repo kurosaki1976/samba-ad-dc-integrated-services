@@ -80,7 +80,7 @@ ldap_rootdn: "ejabberd@example.tld"
 ldap_password: "P@s$w0rd.012"
 ldap_base: "OU=ACME,DC=example,DC=tld"
 ldap_uids: {"sAMAccountName": "%u"}
-ldap_filter: "(&(objectClass=person)(!(userAccountControl:1.2.840.113556.1.4.803:=2))"
+ldap_filter: "(&(memberOf=CN=XMPP,OU=ACME,DC=example,DC=tld)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))"
 
 ###.  ===============
 ###'  TRAFFIC SHAPERS
