@@ -3,11 +3,15 @@ options {
     hostname none;
     server-id none;
     directory "/var/cache/bind";
+    max-cache-size 10m;
+    cleaning-interval 15;
+    max-cache-ttl 60;
+    max-ncache-ttl 60;
     forwarders { 8.8.8.8; 8.8.4.4; };
     forward first;
     auth-nxdomain yes;
-    dnssec-enable no;
-    dnssec-validation no;
+    dnssec-enable yes;
+    dnssec-validation yes;
     dnssec-lookaside no;
     listen-on-v6 { none; };
     listen-on port 53 { 127.0.0.1; 192.168.0.1; };
