@@ -2553,7 +2553,7 @@ $config['ldap_public']["global_ldap_abook"] = array(
 * `RSAT` (herramientas administración servidor remoto `windows`)
 * `Apache Directory Studio` (herramienta administración servicios de directorio `LDAP`)
 * `named-checkconf` (chequeo errores de configuración `bind9`)
-* `squid -kp` (chequeo errores de configuración `squid`)
+* `squid -kc` (cheque errores de sintáxis configuración `squid`)
 * `postconf` (herramienta principal de configuración `postfix`)
 * `postfix check` (chequeo errores de configuración `postfix`)
 * `doveconf -n` (muestra los parámetros configurados)
