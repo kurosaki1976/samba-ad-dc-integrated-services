@@ -1980,11 +1980,15 @@ samba-tool dns add localhost example.tld mail._domainkey TXT '"v=DKIM1; h=sha256
 samba-tool dns add localhost example.tld smtp CNAME 'mail.example.tld' -U 'administrator'%'P@s$w0rd.123'
 samba-tool dns add localhost example.tld pop3 CNAME 'mail.example.tld' -U 'administrator'%'P@s$w0rd.123'
 samba-tool dns add localhost example.tld imap CNAME 'mail.example.tld' -U 'administrator'%'P@s$w0rd.123'
+samba-tool dns add localhost example.tld autodiscover CNAME 'mail.example.tld' -U 'administrator'%'P@s$w0rd.123'
+samba-tool dns add localhost example.tld autoconfig CNAME 'mail.example.tld' -U 'administrator'%'P@s$w0rd.123'
 samba-tool dns add localhost example.tld webmail CNAME 'mail.example.tld' -U 'administrator'%'P@s$w0rd.123'
-samba-tool dns add localhost example.tld _smtp._tcp SRV 'mail.example.tld 25 5 0' -U 'administrator'%'P@s$w0rd.123'
+samba-tool dns add localhost example.tld _smtp._tcp SRV 'smtp.example.tld 25 5 0' -U 'administrator'%'P@s$w0rd.123'
+samba-tool dns add localhost example.tld _smtps._tcp SRV 'smtp.example.tld 465 5 0' -U 'administrator'%'P@s$w0rd.123'
 samba-tool dns add localhost example.tld _imaps._tcp SRV 'imap.example.tld 993 5 0' -U 'administrator'%'P@s$w0rd.123'
 samba-tool dns add localhost example.tld _pop3s._tcp SRV 'pop3.example.tld 995 5 0' -U 'administrator'%'P@s$w0rd.123'
 samba-tool dns add localhost example.tld _submission._tcp SRV 'smtp.example.tld 587 5 0' -U 'administrator'%'P@s$w0rd.123'
+samba-tool dns add localhost example.tld _autodiscover._tcp SRV 'mail.example.tld 443 0 1' -U 'administrator'%'P@s$w0rd.123'
 ```
 
 Crear nueva Unidad Organizativa `Email` para grupos de correo electrónico, perteneciente a `ACME`.
