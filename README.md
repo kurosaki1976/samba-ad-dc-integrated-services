@@ -2357,6 +2357,12 @@ server {
         fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
         include snippets/fastcgi-php.conf;
     }
+    location ~ /(?:a|A)utodiscover/(?:a|A)utodiscover.xml {
+        rewrite .* /autodiscover/autodiscover.xml redirect;
+    }
+    location = /.well-known/autoconfig/mail/config-v1.1.xml {
+        rewrite .* /autoconfig/mail/config-v1.1.xml redirect;
+    }
     location ~ /\. {
         deny all;
     }
@@ -2432,6 +2438,10 @@ nano /etc/apache2/sites-available/roundcube.conf
     RewriteEngine on
     RewriteCond %{HTTPS} =off
     RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [QSA,L,R=301]
+    RewriteCond %{REQUEST_URI} ^/autodiscover/autodiscover.xml
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}/autodiscover/autodiscover.xml [R=301,L]
+    RewriteCond %{REQUEST_URI} ^/autoconfig/mail/config-v1.1.xml
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}/autoconfig/mail/config-v1.1.xml [R=301,L]
 </VirtualHost>
 <IfModule mod_ssl.c>
     <VirtualHost *:443>
