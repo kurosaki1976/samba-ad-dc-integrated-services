@@ -1,18 +1,19 @@
 proxy_cache_path /tmp/cache keys_zone=cache:10m levels=1:2 inactive=600s max_size=100m;
 server {
     listen 80;
+    server_name webmail.example.tld;
+    return 301 https://webmail.example.tld$request_uri;
+}
+server {
     listen 443 ssl http2;
     root /opt/roundcube;
     server_name webmail.example.tld;
-    if ($scheme = http) {
-        return 301 https://$server_name$request_uri;
-    }
     ssl_certificate /etc/ssl/certs/exampleMail.crt;
     ssl_certificate_key /etc/ssl/private/exampleMail.key;
     ssl_dhparam /etc/ssl/dh2048.pem;
-    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+    ssl_protocols TLSv1.2 TLSv1.3;
     ssl_prefer_server_ciphers on;
-    ssl_ciphers "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH";
+    ssl_ciphers "EECDH+AESGCM:EDH+AESGCM";
     ssl_ecdh_curve secp384r1;
     ssl_session_cache shared:SSL:10m;
     ssl_session_tickets off;
@@ -33,9 +34,8 @@ server {
         fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
         include snippets/fastcgi-php.conf;
     }
-    location ~ /\. {
-        deny all;
-    }
+    rewrite ^(/(?:a|A)utodiscover/(?:a|A)utodiscover\.xml)$ /autodiscover/autodiscover.xml;
+    rewrite ^(/mail/config-v1.1\.xml|/.well-known/autoconfig/mail/config-v1.1\.xml|/autoconfig/mail/config-v1.1\.xml)$ /autoconfig/mail/config-v1.1.xml;
     location = /favicon.ico {
         log_not_found off;
         access_log off;
@@ -43,6 +43,10 @@ server {
     location = /robots.txt {
         access_log off;
         log_not_found off;
+    }
+    location ~ /apple-touch-icon(|-\d+x\d+)(|-precomposed).png {
+        log_not_found off;
+        access_log off;
     }
     location / {
         index index.php;
@@ -71,6 +75,12 @@ server {
             access_log off;
             log_not_found off;
         }
+    }
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+     location ~ /\. {
+        deny all;
     }
     access_log /var/log/nginx/roundcube_access.log;
     error_log /var/log/nginx/roundcube_error.log;
