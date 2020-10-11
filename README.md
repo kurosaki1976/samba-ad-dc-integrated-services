@@ -68,7 +68,7 @@
     - [PostgreSQL](#postgresql)
     - [Nginx](#nginx)
     - [Apache2](#apache2)
-    - [Autodescubrimiento y autoconfigyración](#autodescubrimiento-y-autoconfiguración)
+    - [Autodescubrimiento y autoconfiguración](#autodescubrimiento-y-autoconfiguración)
 - [Comandos y herramientas útiles](#comandos-y-herramientas-útiles)
 - [Consideraciones finales](#consideraciones-finales)
 - [Referencias](#referencias)
@@ -94,8 +94,8 @@
   - [Ficheros de publicación web Roundcube]
     - [Servidor Web Nginx](confs/mail/www/nginx/roundcube)
     - [Servidor Web Apache](confs/mail/www/apache2/roundcube.conf)
-    - [Autodiscover](confs/mail/www/autodiscover.xml)
-    - [Autoconfig](confs/mail/www/config-v1.1.xml)
+    - [Microsoft Outlook Autodiscover](confs/mail/www/autodiscover.xml)
+    - [Mozilla Thunderbird Autoconfig](confs/mail/www/config-v1.1.xml)
 
 ## Consideraciones previas
 
