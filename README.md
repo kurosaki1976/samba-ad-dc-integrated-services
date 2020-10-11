@@ -66,7 +66,7 @@
   - [Configuración del servicio Webmail](#configuración-del-servicio-webmail)
     - [Roundcubemail](#roundcubemail)
     - [PostgreSQL](#postgresql)
-    - [Nginx](#ninx)
+    - [Nginx](#nginx)
     - [Apache2](#apache2)
     - [Autodescubrimiento y autoconfigyración](#autodescubrimiento-y-autoconfiguración)
 - [Comandos y herramientas útiles](#comandos-y-herramientas-útiles)
@@ -94,6 +94,8 @@
   - [Ficheros de publicación web Roundcube]
     - [Servidor Web Nginx](confs/mail/www/nginx/roundcube)
     - [Servidor Web Apache](confs/mail/www/apache2/roundcube.conf)
+    - [Autodiscover](confs/mail/www/autodiscover.xml)
+    - [Autoconfig](confs/mail/www/config-v1.1.xml)
 
 ## Consideraciones previas
 
