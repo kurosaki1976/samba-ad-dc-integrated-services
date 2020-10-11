@@ -64,6 +64,9 @@
   - [Configuración del servicio Dovecot](#configuración-del-servicio-dovecot)
     - [Integración con Samba AD DC](#integración-con-samba-ad-dc-5)
   - [Configuración del servicio Webmail](#configuración-del-servicio-webmail)
+    - [Nginx](#ninx)
+    - [Apache2](#apache)
+    - [Autodescubrimiento y autoconfigyración](#autodescubrimiento-autoconfiguración)
 - [Comandos y herramientas útiles](#comandos-y-herramientas-útiles)
 - [Consideraciones finales](#consideraciones-finales)
 - [Referencias](#referencias)
@@ -2403,7 +2406,91 @@ server {
 }
 ```
 
-Crear los ficheros de autodescubrimiento y autoconfiguración.
+Habilitar el servicio.
+
+```bash
+ln -s /etc/nginx/sites-available/roundcube /etc/nginx/sites-enabled/
+```
+
+#### Apache2
+
+Instalar servidor web `Apache2`.
+
+```bash
+apt install apache2 libapache2-mod-php php-pear php-mbstring php-intl php-ldap php-gd php-imagick php-pgsql php-curl php-json php-xml php-bz2 php-zip
+```
+
+Definir zona horaria.
+
+```bash
+sed -i "s/^;date\.timezone =.*$/date\.timezone = 'America\/Havana'/;
+        s/^;cgi\.fix_pathinfo=.*$/cgi\.fix_pathinfo = 0/" \
+        /etc/php/7*/apache2/php.ini
+```
+
+Crear fichero de publicación web.
+
+```bash
+nano /etc/apache2/sites-available/roundcube.conf
+
+<VirtualHost *:80>
+    RewriteEngine on
+    RewriteCond %{HTTPS} =off
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [QSA,L,R=301]
+    RewriteCond %{REQUEST_URI} ^/autodiscover/autodiscover.xml
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}/autodiscover/autodiscover.xml [R=301,L]
+    RewriteCond %{REQUEST_URI} ^/.well-known/autoconfig/mail/config-v1.1.xml
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}/autoconfig/mail/config-v1.1.php [R=301,L]
+    RewriteCond %{REQUEST_URI} ^/autoconfig/mail/config-v1.1.xml
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}/autoconfig/mail/config-v1.1.php [R=301,L]
+    RewriteCond %{REQUEST_URI} ^/mail/config-v1.1.xml
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}/autoconfig/mail/config-v1.1.php [R=301,L]
+</VirtualHost>
+<IfModule mod_ssl.c>
+    <VirtualHost *:443>
+        ServerName webmail.example.tld
+        ServerAdmin webmaster@example.tld
+        DocumentRoot /opt/roundcube
+        DirectoryIndex index.php
+        ErrorLog ${APACHE_LOG_DIR}/roundcube_error.log
+        CustomLog ${APACHE_LOG_DIR}/roundcube_access.log combined
+        SSLEngine on
+        SSLCertificateFile /etc/ssl/certs/exampleMail.crt
+        SSLCertificateKeyFile /etc/ssl/private/exampleMail.key
+        <FilesMatch "\.(cgi|shtml|phtml|php)$">
+            SSLOptions +StdEnvVars
+        </FilesMatch>
+        <Directory /usr/lib/cgi-bin>
+            SSLOptions +StdEnvVars
+        </Directory>
+        BrowserMatch "MSIE [2-6]" nokeepalive ssl-unclean-shutdown downgrade-1.0 force-response-1.0
+        BrowserMatch "MSIE [17-9]" ssl-unclean-shutdown
+        <Directory /opt/roundcube>
+            Options +FollowSymlinks
+            AllowOverride All
+            Require all granted
+            SetEnv HOME /opt/roundcube
+            SetEnv HTTP_HOME /opt/roundcube
+            <IfModule mod_dav.c>
+                Dav off
+            </IfModule>
+        </Directory>
+        <Directory /opt/roundcube/program/resources>
+            <FilesMatch "\.(pdf)$">
+                Require all denied
+            </FilesMatch>
+        </Directory>
+    </VirtualHost>
+</IfModule>
+```
+
+Habilitar el servicio.
+
+```bash
+a2ensite roundcube.conf
+```
+
+#### Autodescubrimiento y autoconfiguración
 
 ```bash
 mkdir -p /opt/roundcube/{autodiscover,autoconfig/mail}
@@ -2511,90 +2598,6 @@ nano /opt/roundcube/autoconfig/mail/config-v1.1.xml
         </outgoingServer>
     </emailProvider>
 </clientConfig>
-```
-
-Habilitar el servicio.
-
-```bash
-ln -s /etc/nginx/sites-available/roundcube /etc/nginx/sites-enabled/
-```
-
-#### Apache2
-
-Instalar servidor web `Apache2`.
-
-```bash
-apt install apache2 libapache2-mod-php php-pear php-mbstring php-intl php-ldap php-gd php-imagick php-pgsql php-curl php-json php-xml php-bz2 php-zip
-```
-
-Definir zona horaria.
-
-```bash
-sed -i "s/^;date\.timezone =.*$/date\.timezone = 'America\/Havana'/;
-        s/^;cgi\.fix_pathinfo=.*$/cgi\.fix_pathinfo = 0/" \
-        /etc/php/7*/apache2/php.ini
-```
-
-Crear fichero de publicación web.
-
-```bash
-nano /etc/apache2/sites-available/roundcube.conf
-
-<VirtualHost *:80>
-    RewriteEngine on
-    RewriteCond %{HTTPS} =off
-    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [QSA,L,R=301]
-    RewriteCond %{REQUEST_URI} ^/autodiscover/autodiscover.xml
-    RewriteRule ^(.*)$ https://%{HTTP_HOST}/autodiscover/autodiscover.xml [R=301,L]
-    RewriteCond %{REQUEST_URI} ^/.well-known/autoconfig/mail/config-v1.1.xml
-    RewriteRule ^(.*)$ https://%{HTTP_HOST}/autoconfig/mail/config-v1.1.php [R=301,L]
-    RewriteCond %{REQUEST_URI} ^/autoconfig/mail/config-v1.1.xml
-    RewriteRule ^(.*)$ https://%{HTTP_HOST}/autoconfig/mail/config-v1.1.php [R=301,L]
-    RewriteCond %{REQUEST_URI} ^/mail/config-v1.1.xml
-    RewriteRule ^(.*)$ https://%{HTTP_HOST}/autoconfig/mail/config-v1.1.php [R=301,L]
-</VirtualHost>
-<IfModule mod_ssl.c>
-    <VirtualHost *:443>
-        ServerName webmail.example.tld
-        ServerAdmin webmaster@example.tld
-        DocumentRoot /opt/roundcube
-        DirectoryIndex index.php
-        ErrorLog ${APACHE_LOG_DIR}/roundcube_error.log
-        CustomLog ${APACHE_LOG_DIR}/roundcube_access.log combined
-        SSLEngine on
-        SSLCertificateFile /etc/ssl/certs/exampleMail.crt
-        SSLCertificateKeyFile /etc/ssl/private/exampleMail.key
-        <FilesMatch "\.(cgi|shtml|phtml|php)$">
-            SSLOptions +StdEnvVars
-        </FilesMatch>
-        <Directory /usr/lib/cgi-bin>
-            SSLOptions +StdEnvVars
-        </Directory>
-        BrowserMatch "MSIE [2-6]" nokeepalive ssl-unclean-shutdown downgrade-1.0 force-response-1.0
-        BrowserMatch "MSIE [17-9]" ssl-unclean-shutdown
-        <Directory /opt/roundcube>
-            Options +FollowSymlinks
-            AllowOverride All
-            Require all granted
-            SetEnv HOME /opt/roundcube
-            SetEnv HTTP_HOME /opt/roundcube
-            <IfModule mod_dav.c>
-                Dav off
-            </IfModule>
-        </Directory>
-        <Directory /opt/roundcube/program/resources>
-            <FilesMatch "\.(pdf)$">
-                Require all denied
-            </FilesMatch>
-        </Directory>
-    </VirtualHost>
-</IfModule>
-```
-
-Habilitar el servicio.
-
-```bash
-a2ensite roundcube.conf
 ```
 
 #### Integración con Samba AD DC
