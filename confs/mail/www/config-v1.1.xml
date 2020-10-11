@@ -3,8 +3,8 @@
 <clientConfig version="1.1">
     <emailProvider id="example.tld">
         <domain>example.tld</domain>
-        <displayName>Mail</displayName>
-        <displayShortName>Mail</displayShortName>
+        <displayName>Example TLD Mail Server</displayName>
+        <displayShortName>ExampleTLD</displayShortName>
         <incomingServer type="pop3">
             <hostname>pop3.example.tld</hostname>
             <port>995</port>
