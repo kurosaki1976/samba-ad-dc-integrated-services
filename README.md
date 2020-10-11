@@ -2357,18 +2357,8 @@ server {
         fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
         include snippets/fastcgi-php.conf;
     }
-    location ~ /(?:a|A)utodiscover/(?:a|A)utodiscover.xml {
-        rewrite .* /autodiscover/autodiscover.php redirect;
-    }
-    location = /.well-known/autoconfig/mail/config-v1.1.xml {
-        rewrite .* /autoconfig/mail/config-v1.1.php redirect;
-    }
-    location = /autoconfig/mail/config-v1.1.xml {
-        rewrite .* /autoconfig/mail/config-v1.1.php redirect;
-    }
-    location = /mail/config-v1.1.xml {
-        rewrite .* /autoconfig/mail/config-v1.1.php redirect;
-    }
+    rewrite ^(/(?:a|A)utodiscover/(?:a|A)utodiscover\.xml)$ /autodiscover/autodiscover.xml;
+    rewrite ^(/mail/config-v1.1\.xml|/.well-known/autoconfig/mail/config-v1.1\.xml|/autoconfig/mail/config-v1.1\.xml)$ /autoconfig/mail/config-v1.1.xml;
     location ~ /\. {
         deny all;
     }
@@ -2411,6 +2401,116 @@ server {
     access_log /var/log/nginx/roundcube_access.log;
     error_log /var/log/nginx/roundcube_error.log;
 }
+```
+
+Crear los ficheros de autodescubrimiento y autoconfiguración.
+
+```bash
+mkdir -p /opt/roundcube/{autodiscover,autoconfig/mail}
+```
+```xml
+nano /opt/roundcube/autodiscover/autodiscover.xml
+
+<?xml version="1.0" encoding="utf-8" ?>
+<Autodiscover xmlns="http://schemas.microsoft.com/exchange/autodiscover/responseschema/2006">
+  <Response xmlns="http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a">
+    <Account>
+      <AccountType>email</AccountType>
+      <Action>settings</Action>
+        <Protocol>
+          <Type>IMAP</Type>
+          <Server>imap.example.tld</Server>
+          <Port>993</Port>
+          <DomainRequired>off</DomainRequired>
+          <LoginName>%EMAILADDRESS%</LoginName>
+          <SPA>off</SPA>
+          <SSL>on</SSL>
+          <AuthRequired>on</AuthRequired>
+        </Protocol>
+        <Protocol>
+          <Type>POP3</Type>
+          <Server>pop3.example.tld</Server>
+          <Port>995</Port>
+          <DomainRequired>off</DomainRequired>
+          <LoginName>%EMAILADDRESS%</LoginName>
+          <SPA>off</SPA>
+          <SSL>on</SSL>
+          <AuthRequired>on</AuthRequired>
+        </Protocol>
+        <Protocol>
+          <Type>SMTP</Type>
+          <Server>smtp.example.tld</Server>
+          <Port>587</Port>
+          <DomainRequired>off</DomainRequired>
+          <LoginName>%EMAILADDRESS%</LoginName>
+          <SPA>off</SPA>
+          <SSL>on</SSL>
+          <Encryption>STARTTLS</Encryption>
+          <AuthRequired>on</AuthRequired>
+          <UsePOPAuth>off</UsePOPAuth>
+          <SMTPLast>off</SMTPLast>
+        </Protocol>
+        <Protocol>
+          <Type>SMTP</Type>
+          <Server>smtp.example.tld</Server>
+          <Port>465</Port>
+          <DomainRequired>off</DomainRequired>
+          <LoginName>%EMAILADDRESS%</LoginName>
+          <SPA>off</SPA>
+          <SSL>on</SSL>
+          <Encryption>STARTTLS</Encryption>
+          <AuthRequired>on</AuthRequired>
+          <UsePOPAuth>off</UsePOPAuth>
+          <SMTPLast>off</SMTPLast>
+        </Protocol>
+      </Account>
+  </Response>
+</Autodiscover>
+```
+```xml
+nano /opt/roundcube/autoconfig/mail/config-v1.1.xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<clientConfig version="1.1">
+    <emailProvider id="example.tld">
+        <domain>example.tld</domain>
+        <displayName>Example TLD Email Server</displayName>
+        <displayShortName>ExampleTLD</displayShortName>
+        <incomingServer type="imap">
+            <hostname>imap.example.tld</hostname>
+            <port>993</port>
+            <socketType>SSL</socketType>
+            <authentication>password-cleartext</authentication>
+            <username>%EMAILADDRESS%</username>
+        </incomingServer>
+      <incomingServer type="pop3">
+            <hostname>pop3.example.tld</hostname>
+            <port>995</port>
+            <socketType>SSL</socketType>
+            <authentication>password-cleartext</authentication>
+            <username>%EMAILADDRESS%</username>
+            <pop3>
+                <leaveMessagesOnServer>true</leaveMessagesOnServer>
+                <downloadOnBiff>true</downloadOnBiff>
+                <daysToLeaveMessagesOnServer>10</daysToLeaveMessagesOnServer>
+            </pop3>
+        </incomingServer>
+        <outgoingServer type="smtp">
+            <hostname>smtp.example.tld</hostname>
+            <port>587</port>
+            <socketType>STARTTLS</socketType>
+            <authentication>password-cleartext</authentication>
+            <username>%EMAILADDRESS%</username>
+        </outgoingServer>
+        <outgoingServer type="smtp">
+            <hostname>smtp.example.tld</hostname>
+            <port>465</port>
+            <socketType>SSL</socketType>
+            <authentication>password-cleartext</authentication>
+            <username>%EMAILADDRESS%</username>
+        </outgoingServer>
+    </emailProvider>
+</clientConfig>
 ```
 
 Habilitar el servicio.
