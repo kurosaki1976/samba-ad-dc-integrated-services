@@ -621,6 +621,8 @@ El servidor Samba AD DC actuará como servidor de tiempo (Network Time Protocol 
 
 ### Integración con Samba AD DC
 
+#### NTPd
+
 ```bash
 mv /etc/ntp.conf{,.org}
 ```
@@ -666,6 +668,48 @@ systemctl restart ntp
 
 ```bash
 systemctl status ntp
+ntpdate -vqd ntp.tld
+ntpq -p
+```
+
+#### Chronyd
+
+```bash
+mv /etc/chrony.conf{,.org}
+```
+
+```bash
+nano /etc/chrony.conf
+
+pool ntp.tld iburst
+driftfile /var/lib/chrony/drift
+makestep 1.0 3
+rtcsync
+allow 192.168.0.0/24
+local stratum 10
+keyfile /etc/chrony.keys
+leapsectz right/UTC
+logdir /var/log/chrony
+ntpsigndsocket /var/lib/samba/ntp_signd
+```
+
+Establecer permisos.
+
+```bash
+chgrp chrony /var/lib/samba/ntp_signd
+chmod 750 /var/lib/samba/ntp_signd/
+```
+
+Reiniciar el servicio.
+
+```bash
+systemctl restart chronyd
+```
+
+### Comprobaciones
+
+```bash
+systemctl status chronyd
 ntpdate -vqd ntp.tld
 ntpq -p
 ```
