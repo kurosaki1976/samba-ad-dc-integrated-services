@@ -685,7 +685,7 @@ ntpq -p
 Instalar paquetes necesarios.
 
 ```bash
-apt install ntpdate chrony
+apt install chrony
 ```
 
 Configurar el servicio.
