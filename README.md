@@ -2709,7 +2709,7 @@ features: fuse=1,nesting=1
 hostname: dc
 memory: 768
 nameserver: 127.0.0.1
-net0: name=eth0,bridge=vmbr0,firewall=0,gw=192.168.0.254,hwaddr=00:00:00:00:00:00,ip=192.168.0.1/24,type=veth
+net0: name=eth0,bridge=vmbr0,gw=192.168.0.254,hwaddr=00:00:00:00:00:00,ip=192.168.0.1/24,type=veth
 ostype: debian
 rootfs: local-lvm:vm-101-disk-0,size=10G
 searchdomain: example.tld
