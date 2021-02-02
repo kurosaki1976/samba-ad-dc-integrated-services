@@ -2694,9 +2694,29 @@ $config['ldap_public']["global_ldap_abook"] = array(
 
 Todas las configuraciones expuestas en esta guía han sido probadas satisfactoriamente -si los pasos descritos se siguen a cabalidad-, en contenedores (CT) y máquinas virtuales (VM), gestionadas con Proxmox v5/v6.
 
-Los CTs que ejecuten servicios que utilicen autenticación Kerberos, deben crearse con las características `fuse`, `nesting` y la opción `Unprivileged mode` desmarcada.
+Los CTs que ejecuten servicios que utilicen autenticación `Kerberos`, deben crearse con las características `fuse`, `nesting` y la opción `Unprivileged mode` desmarcada.
 
 En CTs para que el servidor Samba AD DC funcione correctamente; además de lo descrito en el párrafo anterior, debe activarse la característica `cifs`.
+
+Para un correcto funcionamiento del servidor `NTP` en CTs se debe eliminar la restricción de acceso al reloj del sistema, editando el fichero de configuración del contendor y agregando las líneas `lxc.cap.drop:` y `lxc.cap.drop: mac_admin mac_override sys_module sys_rawio`, al final. Ejemplo:
+
+```bash
+nano /etc/pve/lxc/101.conf
+
+arch: amd64
+cores: 1
+features: fuse=1,nesting=1
+hostname: dc
+memory: 768
+nameserver: 127.0.0.1
+net0: name=eth0,bridge=vmbr0,firewall=0,gw=192.168.0.254,hwaddr=00:00:00:00:00:00,ip=192.168.0.1/24,type=veth
+ostype: debian
+rootfs: local-lvm:vm-101-disk-0,size=10G
+searchdomain: example.tld
+swap: 1024
+lxc.cap.drop:
+lxc.cap.drop: mac_admin mac_override sys_module sys_rawio
+```
 
 La integración de los servicios descritos en esta guía, también son funcionales con el servicio de directorio `Active Directory` de Microsoft Windows.
 
