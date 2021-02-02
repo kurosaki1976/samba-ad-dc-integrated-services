@@ -2781,7 +2781,7 @@ La integración de los servicios descritos en esta guía, también son funcional
 
 ## Referencias
 
-### Samba AD DC+Bind9 DNS Server+DHCP
+### Samba AD DC+Bind9 DNS Server+NTP+DHCP
 
 * [Setting up Samba as an Active Directory Domain Controller](https://wiki.samba.org/index.php/Setting_up_Samba_as_an_Active_Directory_Domain_Controller)
 * [Samba changelog: strong auth required](https://wiki.samba.org/index.php/Samba_4.4_Features_added/changed#ldap_server_require_strong_auth_.28G.29)
@@ -2824,6 +2824,8 @@ La integración de los servicios descritos en esta guía, también son funcional
 * [Creating a Kerberos service principal name and keytab file](https://www.ibm.com/support/knowledgecenter/en/SSAW57_8.5.5/com.ibm.websphere.nd.multiplatform.doc/ae/tsec_kerb_create_spn.html)
 * [Configurar Servidor Proxy-Http Squid3.X con autenticación por protocolo Kerberos](https://cubatic.cubava.cu/2018/11/13/configurar-servidor-proxy-http-squid3-x-con-autenticacion-por-protocolo-kerberos/)
 * [wsauth Diladele](http://packages.diladele.com/websafety/7.0.0.7A5E/amd64/release/debian9/websafety-7.0.0.7A5E_amd64.deb)
+* [capabilities(7) — Linux manual page](https://man7.org/linux/man-pages/man7/capabilities.7.html)
+* [chrony.conf(5) Manual Page](https://chrony.tuxfamily.org/doc/2.4/chrony.conf.html)
 
 ### eJabberd XMPP Server
 
