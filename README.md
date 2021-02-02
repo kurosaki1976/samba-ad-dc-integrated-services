@@ -623,6 +623,14 @@ El servidor Samba AD DC actuará como servidor de tiempo (Network Time Protocol 
 
 #### NTPd
 
+Instalar paquetes necesarios.
+
+```bash
+apt install ntpdate ntp
+```
+
+Configurar el servicio.
+
 ```bash
 mv /etc/ntp.conf{,.org}
 ```
@@ -642,7 +650,7 @@ server ntp.tld iburst prefer
 ntpsigndsocket /var/lib/samba/ntp_signd
 restrict -4 default kod notrap nomodify nopeer noquery mssntp
 restrict default mssntp
-restrict dc.example.tld mask 255.255.255.255 nomodify notrap nopeer noquery
+restrict 192.168.0.0 mask 255.255.255.0 nomodify notrap nopeer noquery
 restrict 127.0.0.1
 restrict ::1
 restrict source notrap nomodify noquery
@@ -673,6 +681,14 @@ ntpq -p
 ```
 
 #### Chronyd
+
+Instalar paquetes necesarios.
+
+```bash
+apt install ntpdate chrony
+```
+
+Configurar el servicio.
 
 ```bash
 mv /etc/chrony.conf{,.org}
@@ -710,8 +726,7 @@ systemctl restart chronyd
 
 ```bash
 systemctl status chronyd
-ntpdate -vqd ntp.tld
-ntpq -p
+chronyc sources
 ```
 
 ## Configuración del servidor DHCP
