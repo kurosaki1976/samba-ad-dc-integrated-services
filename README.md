@@ -2165,10 +2165,10 @@ result_format = %d/%u/Maildir/
 debuglevel = 0
 ```
 
-Definir listas y aliases virtuales de correo electrónico.
+Definir listas, aliases y forwardings virtuales de correo electrónico.
 
 ```bash
-postconf -e "virtual_alias_maps = proxy:ldap:/etc/postfix/virtual_list_maps.cf, proxy:ldap:/etc/postfix/virtual_alias_maps.cf"
+postconf -e "virtual_alias_maps = proxy:ldap:/etc/postfix/virtual_list_maps.cf, proxy:ldap:/etc/postfix/virtual_alias_maps.cf, proxy:ldap:/etc/postfix/virtual_forwarding_maps.cf"
 ```
 
 ```bash
@@ -2205,7 +2205,24 @@ result_attribute = userPrincipalName
 debuglevel = 0
 ```
 
-> **NOTA**: El atributo `otherMailbox` puede editarse utilizando el comando `samba-tool user edit <username>` o mediante las herramientas administrativas GUI `RSAT` o `Apache Directory Studio`.
+```bash
+nano /etc/postfix/virtual_forwarding_maps.cf
+
+server_host = dc.example.tld
+server_port = 389
+version = 3
+bind = yes
+start_tls = no
+bind_dn = postfix@example.tld
+bind_pw = P@s$w0rd.345
+search_base = OU=ACME,DC=example,DC=tld
+scope = sub
+query_filter = (&(objectClass=person)(mail=%s)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))
+result_attribute = mail, pager
+debuglevel = 0
+```
+
+> **NOTA**: Los atributos `otherMailbox` y `pager` pueden editarse utilizando el comando `samba-tool user edit <username>` o mediante las herramientas administrativas GUI `RSAT` o `Apache Directory Studio`.
 
 Habilitar puerto seguro `TCP\587 Submission` y establecer comunicación con `dovecot`.
 
@@ -2230,6 +2247,7 @@ postmap -q leonard@example.tld ldap:/etc/postfix/virtual_sender_login_maps.cf
 postmap -q rajesh@example.tld ldap:/etc/postfix/virtual_mailbox_maps.cf
 postmap -q everyone@example.tld ldap:/etc/postfix/virtual_list_maps.cf
 postmap -q postmaster@example.tld ldap:/etc/postfix/virtual_alias_maps.cf
+postmap -q sheldon@example.tld ldap:/etc/postfix/virtual_forwarding_maps.cf
 ```
 
 Reiniciar el servicio.
