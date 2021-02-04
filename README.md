@@ -2828,6 +2828,12 @@ La integración de los servicios descritos en esta guía, también son funcional
 * [GPO Backup and Restore](https://wiki.samba.org/index.php/GPO_Backup_and_Restore)
 * [Create an Active Directory Infrastructure with Samba4 on Ubuntu – Part 1](https://www.tecmint.com/install-samba4-active-directory-ubuntu/)
 * [Manage Samba4 Active Directory Infrastructure from Windows10 via RSAT – Part 3](https://www.tecmint.com/manage-samba4-ad-from-windows-via-rsat/)
+* [Critical Security Flaws in Samba Released on April 12, 2016 ](https://access.redhat.com/articles/2243351)
+* [Group Policy Home](https://getadmx.com/)
+* [Mapping Active Directory Domain Services attributes to properties in System Center - Service Manager](https://docs.microsoft.com/en-us/system-center/scsm/ad-ds-attribs?view=sc-sm-2019)
+* [The Chromium Projects - Policy Templates](https://www.chromium.org/administrators/policy-templates)
+* [chrony.conf(5) Manual Page](https://chrony.tuxfamily.org/doc/2.4/chrony.conf.html)
+* [Configure NTP Client : Debian](https://www.server-world.info/en/note?os=Debian_10&p=ntp&f=3)
 
 ### Squid Proxy Server
 
@@ -2842,8 +2848,6 @@ La integración de los servicios descritos en esta guía, también son funcional
 * [Creating a Kerberos service principal name and keytab file](https://www.ibm.com/support/knowledgecenter/en/SSAW57_8.5.5/com.ibm.websphere.nd.multiplatform.doc/ae/tsec_kerb_create_spn.html)
 * [Configurar Servidor Proxy-Http Squid3.X con autenticación por protocolo Kerberos](https://cubatic.cubava.cu/2018/11/13/configurar-servidor-proxy-http-squid3-x-con-autenticacion-por-protocolo-kerberos/)
 * [wsauth Diladele](http://packages.diladele.com/websafety/7.0.0.7A5E/amd64/release/debian9/websafety-7.0.0.7A5E_amd64.deb)
-* [capabilities(7) — Linux manual page](https://man7.org/linux/man-pages/man7/capabilities.7.html)
-* [chrony.conf(5) Manual Page](https://chrony.tuxfamily.org/doc/2.4/chrony.conf.html)
 
 ### eJabberd XMPP Server
 
@@ -2879,9 +2883,18 @@ La integración de los servicios descritos en esta guía, también son funcional
 * [Shared Address Book (LDAP) - Linux Home Server HOWTO](https://www.brennan.id.au/20-Shared_Address_Book_LDAP.html)
 * [Authenticating Dovecot against Active Directory](https://wiki.samba.org/index.php/Authenticating_Dovecot_against_Active_Directory)
 * [Authentication/Kerberos -Dovecot Wiki](https://wiki.dovecot.org/Authentication/Kerberos)
+* [Configuration: LDAP Address Books](https://github.com/roundcube/roundcubemail/wiki/Configuration:-LDAP-Address-Books)
+* [Postfix Virtual Hosting With LDAP Backend And With Dovecot As IMAP/POP3 Server On Ubuntu Bionic Beaver 18.04 LTS](https://www.howtoforge.com/tutorial/postfix-virtual-hosting-with-ldap-backend-and-dovecot-imap-pop3-server-on-ubuntu-bionic-beaver-1804-lts/)
+* [Virtual domain alias and LDAP](http://postfix.1071664.n5.nabble.com/Virtual-domain-alias-and-LDAP-td16216.html)
+* [SorkVacationWithGnarwl](https://wiki.horde.org/SorkVacationWithGnarwl)
+* [Mail forwarding with Postfix and LDAP](https://b.aklein.me/mail-forwarding-with-postfix-and-ldap)
+* [Postfix and Ldap (Forward and Redirect)](https://groups.google.com/g/list.postfix.users/c/T8IfENFHzhs)
+* [ luisbosque / simple_vacation ](https://github.com/luisbosque/simple_vacation)
+* [Topic: active directory & forwarding messages](https://forum.iredmail.org/topic11358-iredmail-support-active-directory-forwarding-messages.html)
 
 ### Proxmox VE
 
 * [apache2.service: Failed to set up mount namespacing: Permission denied](https://forum.proxmox.com/threads/apache2-service-failed-to-set-up-mount-namespacing-permission-denied.56871/)
 * [[SOLVED] Problem LXC mariadb debian 10](https://forum.proxmox.com/threads/problem-lxc-mariadb-debian-10.55926/)
 * [LXC - perl: warning: Setting locale failed](https://forum.proxmox.com/threads/lxc-perl-warning-setting-locale-failed.32173/)
+* [capabilities(7) — Linux manual page](https://man7.org/linux/man-pages/man7/capabilities.7.html)
