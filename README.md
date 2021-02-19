@@ -300,7 +300,7 @@ timedatectl status
 journalctl --since -1h -u systemd-timesyncd
 ```
 
-> **NOTA**: Es recomendable hacer coincidir la zona horaria de los `hosts` de acuerdo a la región en cuestión, ejecutando el comando `dpkg-reconfigure tzdata`. En plantillas de contenedores `Debian 9/10`, deben redefinirse los parámetros de idioma, mediante `dpkg-reconfigure locales` y luego de escoger el idioma de preferencia, ejecutar `locale-gen`, y reiniciar el `CT`.
+> **NOTA**: Es recomendable hacer coincidir la zona horaria de los `hosts` de acuerdo a la región en cuestión, ejecutando el comando `dpkg-reconfigure tzdata`. En plantillas de contenedores `Debian 9/10`, deben redefinirse los parámetros de idioma, mediante `dpkg-reconfigure locales` y luego de escoger el idioma de preferencia, ejecutar `locale-gen`, y reiniciar el `CT`. Para una mejor comprensión de los mensajes de error, se recomienda usar Inglés como el idioma predeterminado del sistema: `localectl set-locale LANG=en_US.utf8`.
 
 ## Instalación y configuración de Samba4 como AD DC
 
@@ -308,11 +308,11 @@ Las distribucións de Debian 9/10 cuentan en sus repositorios de paquetes con la
 
 ### Instalación de paquetes necesarios
 
-Deshabilitar la interacción de configuración y proceder con la instalación de paquetes.
+Deshabilitar la interacción de configuración y proceder con la instalación de paquetes indispensables para la admnistración del sistema.
 
 ```bash
 export DEBIAN_FRONTEND=noninteractive
-apt install samba krb5-user winbind libnss-winbind net-tools bind9 dnsutils ntpdate ntp ldap-utils smbclient ldb-tools
+apt install samba krb5-user winbind libnss-winbind net-tools bind9 dnsutils ldap-utils smbclient ldb-tools gnupg htop wget screen nmap telnet tcpdump rsync
 unset DEBIAN_FRONTEND
 ```
 
