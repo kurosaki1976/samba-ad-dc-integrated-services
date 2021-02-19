@@ -308,7 +308,7 @@ Las distribucións de Debian 9/10 cuentan en sus repositorios de paquetes con la
 
 ### Instalación de paquetes necesarios
 
-Deshabilitar la interacción de configuración y proceder con la instalación de paquetes indispensables para `Samba4`, como para la admnistración del sistema.
+Deshabilitar la interacción de configuración y proceder con la instalación de paquetes indispensables para `Samba4`, como para la administración del sistema.
 
 ```bash
 export DEBIAN_FRONTEND=noninteractive
