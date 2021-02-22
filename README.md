@@ -702,7 +702,7 @@ makestep 1.0 3
 rtcsync
 allow 192.168.0.0/24
 local stratum 10
-keyfile /etc/chrony.keys
+keyfile /etc/chrony/chrony.keys
 leapsectz right/UTC
 logdir /var/log/chrony
 ntpsigndsocket /var/lib/samba/ntp_signd
@@ -711,7 +711,7 @@ ntpsigndsocket /var/lib/samba/ntp_signd
 Establecer permisos.
 
 ```bash
-chgrp chrony /var/lib/samba/ntp_signd
+chgrp _chrony /var/lib/samba/ntp_signd
 chmod 750 /var/lib/samba/ntp_signd/
 ```
 
