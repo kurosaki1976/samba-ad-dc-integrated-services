@@ -364,7 +364,6 @@ nano /etc/samba/smb.conf
     netbios name = DC
     realm = EXAMPLE.TLD
     server role = active directory domain controller
-    server services = s3fs, rpc, nbt, wrepl, ldap, cldap, kdc, drepl, winbindd, ntp_signd, kcc, dnsupdate
     server string = Samba4 %v AD DC
     workgroup = EXAMPLE
     idmap_ldb:use rfc2307 = yes
@@ -486,7 +485,7 @@ Editar el fichero `/etc/samba/smb.conf` y en la sección `[global]`:
 
 - añadir la directiva `nsupdate command = /usr/bin/nsupdate -g`,
 
-- modificar la directiva `server services = s3fs, rpc, nbt, wrepl, ldap, cldap, kdc, drepl, winbindd, ntp_signd, kcc, dnsupdate` por `server services = -dns`,
+- agregar la directiva `server services = -dns`,
 
 - comentar ó eliminar la directiva `dns forwarder = 127.0.0.1`.
 
@@ -691,11 +690,11 @@ apt install chrony
 Configurar el servicio.
 
 ```bash
-mv /etc/chrony.conf{,.org}
+mv /etc/chrony/chrony.conf{,.org}
 ```
 
 ```bash
-nano /etc/chrony.conf
+nano /etc/chrony/chrony.conf
 
 pool ntp.tld iburst
 driftfile /var/lib/chrony/drift
