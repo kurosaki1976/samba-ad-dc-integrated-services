@@ -64,11 +64,6 @@
   - [Configuración del servicio Dovecot](#configuración-del-servicio-dovecot)
     - [Integración con Samba AD DC](#integración-con-samba-ad-dc-5)
   - [Configuración del servicio Webmail](#configuración-del-servicio-webmail)
-    - [Roundcubemail](#roundcubemail)
-    - [PostgreSQL](#postgresql)
-    - [Nginx](#nginx)
-    - [Apache2](#apache2)
-    - [Autodescubrimiento y autoconfiguración](#autodescubrimiento-y-autoconfiguración)
 - [Comandos y herramientas útiles](#comandos-y-herramientas-útiles)
 - [Consideraciones finales](#consideraciones-finales)
 - [Referencias](#referencias)
@@ -94,8 +89,6 @@
   - [Ficheros de publicación web Roundcube]
     - [Servidor Web Nginx](confs/mail/www/nginx/roundcube)
     - [Servidor Web Apache](confs/mail/www/apache2/roundcube.conf)
-    - [Microsoft Outlook Autodiscover](confs/mail/www/autodiscover.xml)
-    - [Mozilla Thunderbird Autoconfig](confs/mail/www/config-v1.1.xml)
 
 ## Consideraciones previas
 
@@ -300,7 +293,7 @@ timedatectl status
 journalctl --since -1h -u systemd-timesyncd
 ```
 
-> **NOTA**: Es recomendable hacer coincidir la zona horaria de los `hosts` de acuerdo a la región en cuestión, ejecutando el comando `dpkg-reconfigure tzdata`. En plantillas de contenedores `Debian 9/10`, deben redefinirse los parámetros de idioma, mediante `dpkg-reconfigure locales` y luego de escoger el idioma de preferencia, ejecutar `locale-gen`, y reiniciar el `CT`. Para una mejor comprensión de los mensajes de error, se recomienda usar Inglés como el idioma predeterminado del sistema: `localectl set-locale LANG=en_US.utf8`.
+> **NOTA**: Es recomendable hacer coincidir la zona horaria de los `hosts` de acuerdo a la región en cuestión, ejecutando el comando `dpkg-reconfigure tzdata`. En plantillas de contenedores `Debian 9/10`, deben redefinirse los parámetros de idioma, mediante `dpkg-reconfigure locales` y luego de escoger el idioma de preferencia, ejecutar `locale-gen`, y reiniciar el `CT`. Para una mejor comprensión de los mensajes de error, se recomienda usar Inglés como el idioma predeterminado del sistema: `localectl set-locale LANG=en_US.UTF8`.
 
 ## Instalación y configuración de Samba4 como AD DC
 
@@ -385,6 +378,18 @@ nano /etc/samba/smb.conf
 La directiva `ldap server require strong auth = no` en la sección `[global]` se utiliza para permitir el acceso por el puerto `tcp\389`.
 
 Las directivas `create mask = 0700` y `directory mask = 0644` en las secciones `[netlogon]` y `[sysvol]` son para la correcta asignación de permisos tanto a ficheros como directorios.
+
+Para habilitar la auditoría en Samba AD DC, se deben agregar en la sección `[global]` las siguientes directivas:
+
+```bash
+full_audit:failure = none
+full_audit:success = pwrite write rename
+full_audit:prefix = IP=%I|USER=%u|MACHINE=%m|VOLUME=%S
+full_audit:facility = local7
+full_audit:priority = NOTICE
+```
+
+Y en las secciones `[netlogon]` y `[sysvol]`: `vfs objects = dfs_samba4, acl_xattr, full_audit`.
 
 ### Configuración de Kerberos
 
@@ -492,7 +497,7 @@ Comentar ó eliminar la directiva `dns forwarder = 127.0.0.1`.
 
 ### Modificación del aprovisionamiento AD DC
 
-Definir Bind9 como dns-backend.
+#### Definir `Bind9` como `dns-backend`.
 
 ```bash
 mv /etc/bind/named.conf.local{,.org}
@@ -510,9 +515,26 @@ dlz "samba4" {
 samba_upgradedns --dns-backend=BIND9_DLZ
 chgrp bind /var/lib/samba/private/dns.keytab
 chmod g+r /var/lib/samba/private/dns.keytab
-touch /var/log/named.log
-chown root:bind /var/log/named.log
-chmod 664 /var/log/named.log
+```
+
+#### Configurar `Bind9`.
+
+##### Parámetros del servicio
+
+```bash
+mv /etc/default/bind9{,.org}
+```
+
+```bash
+nano /etc/default/bind9
+
+RESOLVCONF=no
+OPTIONS="-4 -u bind"
+```
+
+##### Opciones globales del servicio
+
+```bash
 mv /etc/bind/named.conf.options{,.org}
 ```
 
@@ -543,30 +565,89 @@ options {
     empty-zones-enable no;
     minimal-responses yes;
 };
+```
+
+##### Definir bitácora de eventos
+
+```bash
+mkdir -p /var/log/bind/
+touch /var/log/bind/audit.log
+touch /var/log/bind/requests.log
+chown -R bind /var/log/bind
+chmod u+rw /var/log/bind
+```
+
+```bash
+nano /etc/bind/named.conf.logging
 
 logging {
-    channel xfer-log {
-        file "/var/log/named.log";
+    channel default_syslog { syslog local2; };
+    channel audit_log {
+        file "/var/log/bind/audit.log" size 10m;
+        severity debug;
         print-category yes;
         print-severity yes;
-        severity info;
+        print-time yes;
     };
-    category xfer-in { xfer-log; };
-    category xfer-out { xfer-log; };
-    category notify { xfer-log; };
+    channel requests_log {
+        file "/var/log/bind/requests.log" size 10m;
+        severity debug;
+        print-time yes;
+        print-category yes;
+        print-severity yes;
+    };
+    channel null { null; };
+    category default { default_syslog; };
+    category general { audit_log; };
+    category security { audit_log; };
+    category config { audit_log; };
+    category resolver { audit_log; };
+    category xfer-in { audit_log; };
+    category xfer-out { audit_log; };
+    category notify { audit_log; };
+    category client { audit_log; };
+    category network { audit_log; };
+    category update { audit_log; };
+    category queries { requests_log; audit_log; };
+    category lame-servers { null; };
 };
 ```
 
-```bash
-mv /etc/default/bind9{,.org}
-```
+Agregar al final del fichero `/etc/bind/named.conf` la directiva `include /etc/bind/named.conf.logging`.
+
+##### Definir rotación de los archivos de bitácora
 
 ```bash
-nano /etc/default/bind9
+nano /etc/logrotate.d/bind
 
-RESOLVCONF=no
-OPTIONS="-4 -u bind"
+/var/log/bind/audit.log {
+    daily
+    missingok
+    rotate 7
+    compress
+    delaycompress
+    notifempty
+    create 644 bind bind
+    postrotate
+        systemctl reload bind9 > /dev/null
+    endscript
+}
+
+/var/log/bind/requests.log {
+    daily
+    missingok
+    rotate 7
+    compress
+    delaycompress
+    notifempty
+    create 644 bind bind
+    postrotate
+        systemctl reload bind9 > /dev/null
+    endscript
+}
 ```
+
+##### Permitir la actualización de registros `DNS`
 
 ```bash
 nano /var/lib/samba/private/named.conf.update
@@ -578,7 +659,7 @@ grant local-ddns zonesub any;
 Reiniciar los servicios.
 
 ```bash
-systemctl restart samba-ad-dc bind9
+systemctl restart logrotate samba-ad-dc bind9
 systemctl enable bind9
 ```
 
@@ -1572,7 +1653,7 @@ auth_param negotiate children 20 startup=0 idle=1
 auth_param negotiate keep_alive off
 
 # Basic LDAP authentication (fallback)
-auth_param basic program /usr/lib/squid/basic_ldap_auth -R -b "dc=example,dc=tld" -D squid@example.tld -w "P@s$w0rd.789" -f (|(userPrincipalName=%s)(sAMAccountName=%s)) -h dc.example.tld
+auth_param basic program /usr/lib/squid/basic_ldap_auth -R -b "dc=example,dc=tld" -D squid@example.tld -w "P@s$w0rd.789" -f "(|(userPrincipalName=%s)(sAMAccountName=%s))" -h dc.example.tld
 auth_param basic children 10
 auth_param basic realm PROXY.EXAMPLE.TLD
 auth_param basic credentialsttl 8 hours
@@ -1621,7 +1702,7 @@ Usando autenticación `Kerberos`.
 Usando autenticación básica LDAP.
 
 ```bash
-/usr/lib/squid/basic_ldap_auth -R -b "dc=example,dc=tld" -D squid@example.tld -w "P@s$w0rd.789" -f sAMAccountName=%s -h dc.example.tld
+/usr/lib/squid/basic_ldap_auth -R -b "dc=example,dc=tld" -D squid@example.tld -w "P@s$w0rd.789" -f "(|(userPrincipalName=%s)(sAMAccountName=%s))" -h dc.example.tld
 ```
 
 Membresía de grupos LDAP.
@@ -2046,15 +2127,11 @@ samba-tool dns add localhost example.tld mail._domainkey TXT '"v=DKIM1; h=sha256
 samba-tool dns add localhost example.tld smtp CNAME 'mail.example.tld' -U 'administrator'%'P@s$w0rd.123'
 samba-tool dns add localhost example.tld pop3 CNAME 'mail.example.tld' -U 'administrator'%'P@s$w0rd.123'
 samba-tool dns add localhost example.tld imap CNAME 'mail.example.tld' -U 'administrator'%'P@s$w0rd.123'
-samba-tool dns add localhost example.tld autodiscover CNAME 'mail.example.tld' -U 'administrator'%'P@s$w0rd.123'
-samba-tool dns add localhost example.tld autoconfig CNAME 'mail.example.tld' -U 'administrator'%'P@s$w0rd.123'
 samba-tool dns add localhost example.tld webmail CNAME 'mail.example.tld' -U 'administrator'%'P@s$w0rd.123'
-samba-tool dns add localhost example.tld _smtp._tcp SRV 'smtp.example.tld 25 5 0' -U 'administrator'%'P@s$w0rd.123'
-samba-tool dns add localhost example.tld _smtps._tcp SRV 'smtp.example.tld 465 5 0' -U 'administrator'%'P@s$w0rd.123'
+samba-tool dns add localhost example.tld _smtp._tcp SRV 'mail.example.tld 25 5 0' -U 'administrator'%'P@s$w0rd.123'
 samba-tool dns add localhost example.tld _imaps._tcp SRV 'imap.example.tld 993 5 0' -U 'administrator'%'P@s$w0rd.123'
 samba-tool dns add localhost example.tld _pop3s._tcp SRV 'pop3.example.tld 995 5 0' -U 'administrator'%'P@s$w0rd.123'
 samba-tool dns add localhost example.tld _submission._tcp SRV 'smtp.example.tld 587 5 0' -U 'administrator'%'P@s$w0rd.123'
-samba-tool dns add localhost example.tld _autodiscover._tcp SRV 'mail.example.tld 443 0 1' -U 'administrator'%'P@s$w0rd.123'
 ```
 
 Crear nueva Unidad Organizativa `Email` para grupos de correo electrónico, perteneciente a `ACME`.
@@ -2409,12 +2486,13 @@ nano /etc/nginx/sites-available/roundcube
 proxy_cache_path /tmp/cache keys_zone=cache:10m levels=1:2 inactive=600s max_size=100m;
 server {
     listen 80;
+    server_name webmail.example.tld;
+    return 301 https://webmail.example.tld$request_uri;
+}
+server {
     listen 443 ssl http2;
     root /opt/roundcube;
     server_name webmail.example.tld;
-    if ($scheme = http) {
-        return 301 https://$server_name$request_uri;
-    }
     ssl_certificate /etc/ssl/certs/exampleMail.crt;
     ssl_certificate_key /etc/ssl/private/exampleMail.key;
     ssl_dhparam /etc/ssl/dh2048.pem;
@@ -2441,8 +2519,6 @@ server {
         fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
         include snippets/fastcgi-php.conf;
     }
-    rewrite ^(/(?:a|A)utodiscover/(?:a|A)utodiscover\.xml)$ /autodiscover/autodiscover.xml;
-    rewrite ^(/mail/config-v1.1\.xml|/.well-known/autoconfig/mail/config-v1.1\.xml|/autoconfig/mail/config-v1.1\.xml)$ /autoconfig/mail/config-v1.1.xml;
     location ~ /\. {
         deny all;
     }
@@ -2515,17 +2591,8 @@ Crear fichero de publicación web.
 nano /etc/apache2/sites-available/roundcube.conf
 
 <VirtualHost *:80>
-    RewriteEngine on
-    RewriteCond %{HTTPS} =off
-    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [QSA,L,R=301]
-    RewriteCond %{REQUEST_URI} ^/autodiscover/autodiscover.xml
-    RewriteRule ^(.*)$ https://%{HTTP_HOST}/autodiscover/autodiscover.xml [R=301,L]
-    RewriteCond %{REQUEST_URI} ^/.well-known/autoconfig/mail/config-v1.1.xml
-    RewriteRule ^(.*)$ https://%{HTTP_HOST}/autoconfig/mail/config-v1.1.php [R=301,L]
-    RewriteCond %{REQUEST_URI} ^/autoconfig/mail/config-v1.1.xml
-    RewriteRule ^(.*)$ https://%{HTTP_HOST}/autoconfig/mail/config-v1.1.php [R=301,L]
-    RewriteCond %{REQUEST_URI} ^/mail/config-v1.1.xml
-    RewriteRule ^(.*)$ https://%{HTTP_HOST}/autoconfig/mail/config-v1.1.php [R=301,L]
+     ServerName webmail.example.tld
+     Redirect permanent / https://webmail.example.tld/
 </VirtualHost>
 <IfModule mod_ssl.c>
     <VirtualHost *:443>
@@ -2571,116 +2638,6 @@ Habilitar el servicio.
 a2ensite roundcube.conf
 ```
 
-#### Autodescubrimiento y autoconfiguración
-
-```bash
-mkdir -p /opt/roundcube/{autodiscover,autoconfig/mail}
-```
-```xml
-nano /opt/roundcube/autodiscover/autodiscover.xml
-
-<?xml version="1.0" encoding="utf-8" ?>
-<Autodiscover xmlns="http://schemas.microsoft.com/exchange/autodiscover/responseschema/2006">
-  <Response xmlns="http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a">
-    <Account>
-      <AccountType>email</AccountType>
-      <Action>settings</Action>
-        <Protocol>
-          <Type>IMAP</Type>
-          <Server>imap.example.tld</Server>
-          <Port>993</Port>
-          <DomainRequired>off</DomainRequired>
-          <LoginName>%EMAILADDRESS%</LoginName>
-          <SPA>off</SPA>
-          <SSL>on</SSL>
-          <AuthRequired>on</AuthRequired>
-        </Protocol>
-        <Protocol>
-          <Type>POP3</Type>
-          <Server>pop3.example.tld</Server>
-          <Port>995</Port>
-          <DomainRequired>off</DomainRequired>
-          <LoginName>%EMAILADDRESS%</LoginName>
-          <SPA>off</SPA>
-          <SSL>on</SSL>
-          <AuthRequired>on</AuthRequired>
-        </Protocol>
-        <Protocol>
-          <Type>SMTP</Type>
-          <Server>smtp.example.tld</Server>
-          <Port>587</Port>
-          <DomainRequired>off</DomainRequired>
-          <LoginName>%EMAILADDRESS%</LoginName>
-          <SPA>off</SPA>
-          <SSL>on</SSL>
-          <Encryption>STARTTLS</Encryption>
-          <AuthRequired>on</AuthRequired>
-          <UsePOPAuth>off</UsePOPAuth>
-          <SMTPLast>off</SMTPLast>
-        </Protocol>
-        <Protocol>
-          <Type>SMTP</Type>
-          <Server>smtp.example.tld</Server>
-          <Port>465</Port>
-          <DomainRequired>off</DomainRequired>
-          <LoginName>%EMAILADDRESS%</LoginName>
-          <SPA>off</SPA>
-          <SSL>on</SSL>
-          <Encryption>STARTTLS</Encryption>
-          <AuthRequired>on</AuthRequired>
-          <UsePOPAuth>off</UsePOPAuth>
-          <SMTPLast>off</SMTPLast>
-        </Protocol>
-      </Account>
-  </Response>
-</Autodiscover>
-```
-```xml
-nano /opt/roundcube/autoconfig/mail/config-v1.1.xml
-
-<?xml version="1.0" encoding="UTF-8"?>
-<clientConfig version="1.1">
-    <emailProvider id="example.tld">
-        <domain>example.tld</domain>
-        <displayName>Example TLD Email Server</displayName>
-        <displayShortName>ExampleTLD</displayShortName>
-        <incomingServer type="imap">
-            <hostname>imap.example.tld</hostname>
-            <port>993</port>
-            <socketType>SSL</socketType>
-            <authentication>password-cleartext</authentication>
-            <username>%EMAILADDRESS%</username>
-        </incomingServer>
-      <incomingServer type="pop3">
-            <hostname>pop3.example.tld</hostname>
-            <port>995</port>
-            <socketType>SSL</socketType>
-            <authentication>password-cleartext</authentication>
-            <username>%EMAILADDRESS%</username>
-            <pop3>
-                <leaveMessagesOnServer>true</leaveMessagesOnServer>
-                <downloadOnBiff>true</downloadOnBiff>
-                <daysToLeaveMessagesOnServer>10</daysToLeaveMessagesOnServer>
-            </pop3>
-        </incomingServer>
-        <outgoingServer type="smtp">
-            <hostname>smtp.example.tld</hostname>
-            <port>587</port>
-            <socketType>STARTTLS</socketType>
-            <authentication>password-cleartext</authentication>
-            <username>%EMAILADDRESS%</username>
-        </outgoingServer>
-        <outgoingServer type="smtp">
-            <hostname>smtp.example.tld</hostname>
-            <port>465</port>
-            <socketType>SSL</socketType>
-            <authentication>password-cleartext</authentication>
-            <username>%EMAILADDRESS%</username>
-        </outgoingServer>
-    </emailProvider>
-</clientConfig>
-```
-
 #### Integración con Samba AD DC
 
 ```bash
@@ -2695,7 +2652,7 @@ $config['autocomplete_addressbooks'] = array(
     'global_ldap_abook'
 );
 $config['ldap_public']["global_ldap_abook"] = array(
-    'name'              => 'Mailboxes',
+    'name'              => 'Global Address Book',
     'hosts'             => array('dc.example.tld'),
     'port'              => 389,
     'use_tls'           => false,
@@ -2716,6 +2673,7 @@ $config['ldap_public']["global_ldap_abook"] = array(
     ),
     'fieldmap' => array(
         'name'          => 'cn',
+        'displayname'   => 'displayName',
         'surname'       => 'sn',
         'firstname'     => 'givenName',
         'title'         => 'title',
@@ -2732,14 +2690,14 @@ $config['ldap_public']["global_ldap_abook"] = array(
     ),
     'sort'          => 'cn',
     'scope'         => 'sub',
-    'filter'        => '(&(|(objectclass=person))(!(mail=archive@example.tld))(!(userAccountControl:1.2.840.113556.1.4.803:=2)))',
+    'filter'        => '(&(mail=*)(|(objectclass=person)(objectClass=group))(!(mail=archive@example.tld))(!(userAccountControl:1.2.840.113556.1.4.803:=2))(!(objectClass=computer)))',
     'fuzzy_search'  => true,
     'vlv'           => false,
     'sizelimit'     => '0',
     'timelimit'     => '0',
     'referrals'     => false,
     'group_filters' => array(
-        'departments' => array(
+        'lists' => array(
             'name'    => 'Lists',
             'scope'   => 'sub',
             'base_dn' => 'OU=Email,OU=ACME,DC=example,DC=tld',
@@ -2760,7 +2718,7 @@ $config['ldap_public']["global_ldap_abook"] = array(
 * `RSAT` (herramientas administración servidor remoto `windows`)
 * `Apache Directory Studio` (herramienta administración servicios de directorio `LDAP`)
 * `named-checkconf` (chequeo errores de configuración `bind9`)
-* `squid -kc` (chequeo errores de sintáxis configuración `squid`)
+* `squid -kp` (chequeo errores de configuración `squid`)
 * `postconf` (herramienta principal de configuración `postfix`)
 * `postfix check` (chequeo errores de configuración `postfix`)
 * `doveconf -n` (muestra los parámetros configurados)
@@ -2771,7 +2729,7 @@ $config['ldap_public']["global_ldap_abook"] = array(
 
 Todas las configuraciones expuestas en esta guía han sido probadas satisfactoriamente -si los pasos descritos se siguen a cabalidad-, en contenedores (CT) y máquinas virtuales (VM), gestionadas con Proxmox v5/v6.
 
-Los CTs que ejecuten servicios que utilicen autenticación `Kerberos`, deben crearse con las características `fuse`, `nesting` y la opción `Unprivileged mode` desmarcada.
+Los CTs que ejecuten servicios que utilicen autenticación Kerberos, deben crearse con las características `fuse`, `nesting` y la opción `Unprivileged mode` desmarcada.
 
 En CTs para que el servidor Samba AD DC funcione correctamente; además de lo descrito en el párrafo anterior, debe activarse la característica `cifs`.
 
@@ -2831,6 +2789,7 @@ La integración de los servicios descritos en esta guía, también son funcional
 * [Critical Security Flaws in Samba Released on April 12, 2016 ](https://access.redhat.com/articles/2243351)
 * [Group Policy Home](https://getadmx.com/)
 * [To distribute certificates to client computers by using Group Policy](https://docs.microsoft.com/en-us/windows-server/identity/ad-fs/deployment/distribute-certificates-to-client-computers-by-using-group-policy)
+* [Install and configure certificate authority (CA) on Microsoft Windows server with Group Policy](http://vcloud-lab.com/entries/windows-2016-server-r2/install-and-configure-certificate-authority-ca--on-microsoft-windows-server-with-group-policy)
 * [Mapping Active Directory Domain Services attributes to properties in System Center - Service Manager](https://docs.microsoft.com/en-us/system-center/scsm/ad-ds-attribs?view=sc-sm-2019)
 * [User Attributes - Inside Active Directory](http://www.kouti.com/tables/userattributes.htm)
 * [Administer Unix Attributes in AD using samba-tool and ldb-tools](https://wiki.samba.org/index.php/Administer_Unix_Attributes_in_AD_using_samba-tool_and_ldb-tools)
