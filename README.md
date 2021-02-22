@@ -1173,6 +1173,20 @@ Asignar permisos de ejecución.
 chmod +x /etc/dhcp/dhcpd-update-dns.sh /usr/bin/samba-dnsupdate.sh
 ```
 
+Modificar parámetros globales del servicio.
+
+```bash
+mv /etc/default/isc-dhcp-server{,.org}
+```
+
+```bash
+nano /etc/default/isc-dhcp-server
+
+DHCPDv4_CONF=/etc/dhcp/dhcpd.conf
+DHCPDv4_PID=/var/run/dhcpd.pid
+INTERFACESv4="eth0"
+```
+
 Crear fichero principal del servicio `DHCP`.
 
 ```bash
