@@ -481,13 +481,14 @@ Durante el aprovisionamiento se utilizó el `dns-backend=SAMBA_INTERNAL`, que pr
 
 ### Integración con Samba AD DC
 
-Editar el fichero `/etc/samba/smb.conf` y en la sección `[global]`:
+Editar el fichero `/etc/samba/smb.conf` y en la sección `[global]` añadir las directivas:
 
-- añadir la directiva `nsupdate command = /usr/bin/nsupdate -g`,
+```bash
+server services = -dns
+nsupdate command = /usr/bin/nsupdate -g
+```
 
-- agregar la directiva `server services = -dns`,
-
-- comentar ó eliminar la directiva `dns forwarder = 127.0.0.1`.
+Comentar ó eliminar la directiva `dns forwarder = 127.0.0.1`.
 
 ### Modificación del aprovisionamiento AD DC
 
