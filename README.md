@@ -2,7 +2,7 @@
 
 ## Autores
 
-- [Ixen Rodríguez Pérez - kurosaki1976](ixenrp1976@gmail.com)
+- [Ixen Rodríguez Pérez - kurosaki1976](https://github.com/kurosaki1976)
 - [Yoel Torres Vázquez - oneohthree](https://github.com/oneohthree)
 
 ## Tabla de contenidos
