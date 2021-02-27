@@ -613,7 +613,7 @@ logging {
 };
 ```
 
-Agregar al final del fichero `/etc/bind/named.conf` la directiva `include /etc/bind/named.conf.logging`.
+Agregar al final del fichero `/etc/bind/named.conf` la directiva `include "/etc/bind/named.conf.logging";`.
 
 ##### Definir rotación de los archivos de bitácora
 
