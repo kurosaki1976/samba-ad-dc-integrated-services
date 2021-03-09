@@ -1556,7 +1556,7 @@ samba-tool group addmembers 'Unrestricted' rajesh
 
 ```bash
 export DEBIAN_FRONTEND=noninteractive
-apt install squid krb5-user msktutil libsasl2-modules-gssapi-mit
+apt install squid krb5-user msktutil libsasl2-modules-gssapi-mit net-tools dnsutils
 unset DEBIAN_FRONTEND
 ```
 
@@ -1565,7 +1565,6 @@ Detener el servicio y remplazar el fichero de configuración por defecto de Squi
 ```bash
 systemctl stop squid
 mv /etc/squid/squid.conf{,.org}
-nano /etc/squid/squid.conf
 ```
 
 Configuración de `Kerberos`.
@@ -1601,6 +1600,7 @@ Generar archivo keytab.
 
 ```bash
 kinit Administrator@EXAMPLE.TLD
+
 msktutil -c -b "CN=Computers" \
     -s HTTP/proxy.example.tld \
     -h proxy.example.tld \
