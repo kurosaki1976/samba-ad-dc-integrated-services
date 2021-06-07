@@ -1962,6 +1962,8 @@ mod_shared_roster_ldap:
   ldap_filter: "(&(objectClass=person)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))"
 ```
 
+> **NOTA**: El atributo `department` puede editarse utilizando el comando `samba-tool user edit <username>` o mediante las herramientas administrativas GUI `RSAT` o `Apache Directory Studio`.
+
 ### Personalizar vCard de los usuarios
 
 Editar el fichero `/etc/ejabberd/ejabberd.yml` y añadir en la sección `MODULES`, el siguiente contenido:
@@ -2024,6 +2026,8 @@ mod_vcard:
     "Nickname": "NICKNAME"
     "Email": "EMAIL"
 ```
+
+> **NOTA**: Los atributos definidos para las `vCard` de los usuarios, pueden editarse utilizando el comando `samba-tool user edit <username>` o mediante las herramientas administrativas GUI `RSAT` o `Apache Directory Studio`.
 
 Reiniciar el servicio y comprobar su correcto funcionamiento.
 
