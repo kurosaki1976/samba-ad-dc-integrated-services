@@ -26,6 +26,11 @@
 ###########################################################################################
 
 IPTABLES="/usr/sbin/iptables"
+IPTABLES-SAVE="/usr/sbin/iptables-save"
+NETWORK="192.168.0.0/24"
+HOST="192.168.0.1"
+DEV=`ip -br link | grep -v LOOPBACK | awk '{ print $1 }'`
+BROADCAST=`ip addr show dev $DEV | grep brd | awk '/inet / {print $4}'`
 
 ## Limpiar todos los contadores, cadenas, reglas y políticas existentes
 #
@@ -36,18 +41,19 @@ $IPTABLES -F
 $IPTABLES -X
 
 ## Crear cadenas perzonalizadas para abrir puertos específicos en el firewall
-## y monitorear/registrar acceso SSH
+## y monitorear/registrar acceso SSH y resto de las conexiones
 #
 $IPTABLES -N TCP
 $IPTABLES -N UDP
 $IPTABLES -N IN_SSH
 $IPTABLES -N LOG_AND_DROP
+$IPTABLES -N LOGGING
 
 ## Establecer políticas por defecto
 #
-$IPTABLES -P FORWARD DROP
-$IPTABLES -P OUTPUT ACCEPT
 $IPTABLES -P INPUT DROP
+$IPTABLES -P OUTPUT ACCEPT
+$IPTABLES -P FORWARD DROP
 
 ## Crear reglas generales
 #
@@ -59,19 +65,23 @@ $IPTABLES -A INPUT -p tcp -m tcp --dport 22 -m conntrack --ctstate NEW -j IN_SSH
 $IPTABLES -A INPUT -p udp -m conntrack --ctstate NEW -j UDP
 $IPTABLES -A INPUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -m conntrack --ctstate NEW -j TCP
 
+## Registrar todas las conexiones entrantes
+#
+$IPTABLES -A INPUT ! -d $BROADCAST -j LOGGING
+
 ## Protección contra barridos de puertos (tricking port scanners)
 #
-$IPTABLES -A INPUT -p tcp -m recent --set --name TCP-PORTSCAN --mask 255.255.255.255 --rsource -j REJECT --reject-with tcp-reset
-$IPTABLES -A INPUT -p udp -m recent --set --name UDP-PORTSCAN --mask 255.255.255.255 --rsource -j REJECT --reject-with icmp-port-unreachable
+$IPTABLES -A INPUT -p tcp -m recent --set --rsource --name TCP-PORTSCAN -j REJECT --reject-with tcp-reset
+$IPTABLES -A INPUT -p udp -m recent --set --rsource --name UDP-PORTSCAN -j REJECT --reject-with icmp-port-unreachable
 
-## Denegar resto conexiones entrantes
+## Rechazar resto conexiones entrantes
 #
 $IPTABLES -A INPUT -j REJECT --reject-with icmp-proto-unreachable
 
 ## INICIO REGLAS DE ACCESO PERZONALIZADAS CADENAS TCP/UDP (descomentar según necesidad)
 #
 # Permitir acceso protocolo SSH (TCP/22)
-$IPTABLES -A TCP -p tcp -m tcp --dport 22 -j ACCEPT
+$IPTABLES -A TCP -s $NETWORK -d $HOST -p tcp -m tcp --dport 22 -j ACCEPT
 
 # Permitir acceso consultas DNS (UDP/53,"TCP/53 transferencia de zonas")
 #$IPTABLES -A UDP -p udp -m udp --dport 53 -j ACCEPT
@@ -94,8 +104,8 @@ $IPTABLES -A TCP -p tcp -m tcp --dport 22 -j ACCEPT
 #$IPTABLES -A TCP -p tcp -m tcp --dport 25 -j ACCEPT
 
 # Permitir acceso protocolos email MUA (recomendados protocolos seguros SSL/TLS y STARTTLS):
-# SMTPs/IMAP/IMAPs/POP3/POP3s/SUBMISSION (TCP/465,143,993,110,995,587)
-#$IPTABLES -A TCP -p tcp -m tcp -m multiport --dports 465,143,993,110,995,587 -j ACCEPT
+# IMAPs/POP3s/SUBMISSION (TCP/993,995,587)
+#$IPTABLES -A TCP -p tcp -m tcp -m multiport --dports 993,995,587 -j ACCEPT
 
 # Permitir acceso protocolo XMPP:
 # (TCP/5222 "xmpp-client",TCP/5269 "xmpp-server")
@@ -118,8 +128,8 @@ $IPTABLES -A TCP -p tcp -m tcp --dport 22 -j ACCEPT
 
 # Protección contra barridos UDP/ACK/SYN (-sU/-sA/-sS scans in nmap)
 #
-$IPTABLES -A TCP -p tcp -m recent --update --seconds 60 --name TCP-PORTSCAN --mask 255.255.255.255 --rsource -j REJECT --reject-with tcp-reset
-$IPTABLES -A UDP -p udp -m recent --update --seconds 60 --name UDP-PORTSCAN --mask 255.255.255.255 --rsource -j REJECT --reject-with icmp-port-unreachable
+$IPTABLES -A TCP -p tcp -m recent --update --rsource --seconds 60 --name TCP-PORTSCAN -j REJECT --reject-with tcp-reset
+$IPTABLES -A UDP -p udp -m recent --update --rsource --seconds 60 --name UDP-PORTSCAN -j REJECT --reject-with icmp-port-unreachable
 #
 ## FIN REGLAS DE ACCESO PERZONALIZADAS CADENAS TCP/UDP
 
@@ -128,11 +138,27 @@ $IPTABLES -A UDP -p udp -m recent --update --seconds 60 --name UDP-PORTSCAN --ma
 $IPTABLES -A IN_SSH -m recent --name sshbf --rttl --rcheck --hitcount 3 --seconds 10 -j LOG_AND_DROP
 $IPTABLES -A IN_SSH -m recent --name sshbf --rttl --rcheck --hitcount 4 --seconds 1800 -j LOG_AND_DROP
 $IPTABLES -A IN_SSH -m recent --name sshbf --set -j ACCEPT
-$IPTABLES -A LOG_AND_DROP -j LOG --log-prefix "iptables deny: " --log-level 7
+$IPTABLES -A LOG_AND_DROP -j LOG --log-prefix "IPTables-dropped: " --log-level 4
 $IPTABLES -A LOG_AND_DROP -j DROP
+
+## Reglas de monitoreo para todas las conexiones que se denieguen
+#
+$IPTABLES -A LOGGING -m limit --limit 2/min -j LOG --log-prefix "Iptables dropped: " --log-level 4
+$IPTABLES -A LOGGING -j DROP
 
 ## Protección contra ataques de suplantación (spoofing attacks)
 #
 $IPTABLES -t raw -I PREROUTING -m rpfilter --invert -j DROP
+
+## Salvando configuración persistente de reglas firewall
+#
+# Debian/Ubuntu
+/bin/cp /etc/iptables/rules.v4{,.org}
+$IPTABLES-SAVE > /etc/iptables/rules.v4
+# RHEL/CentOS
+#/bin/cp /etc/sysconfig/iptables{,.org}
+#$IPTABLES-SAVE > /etc/sysconfig/iptables
+# Para las 4 ditribuciones
+# invoke-rc.d iptables-persistent save
 
 exit 0
