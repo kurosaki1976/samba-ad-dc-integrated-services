@@ -702,65 +702,6 @@ El servidor Samba AD DC actuará como servidor de tiempo (Network Time Protocol 
 
 ### Integración con Samba AD DC
 
-#### NTPd
-
-Instalar paquetes necesarios.
-
-```bash
-apt install ntpdate ntp
-```
-
-Configurar el servicio.
-
-```bash
-mv /etc/ntp.conf{,.org}
-```
-
-```bash
-nano /etc/ntp.conf
-
-driftfile /var/lib/ntp/ntp.drift
-logfile /var/log/ntpd.log
-statistics loopstats peerstats clockstats
-filegen loopstats file loopstats type day enable
-filegen peerstats file peerstats type day enable
-filegen clockstats file clockstats type day enable
-server 127.127.1.0
-fudge 127.127.1.0 stratum 10
-server ntp.tld iburst prefer
-ntpsigndsocket /var/lib/samba/ntp_signd
-restrict -4 default kod notrap nomodify nopeer noquery mssntp
-restrict default mssntp
-restrict 192.168.0.0 mask 255.255.255.0 nomodify notrap nopeer noquery
-restrict 127.0.0.1
-restrict ::1
-restrict source notrap nomodify noquery
-broadcast 192.168.0.255 ttl 4
-broadcastdelay 0.004
-tinker panic 0
-```
-
-Establecer permisos.
-
-```bash
-chgrp ntp /var/lib/samba/ntp_signd
-usermod -a -G staff ntp
-```
-
-Reiniciar el servicio.
-
-```bash
-systemctl restart ntp
-```
-
-### Comprobaciones
-
-```bash
-systemctl status ntp
-ntpdate -vqd ntp.tld
-ntpq -p
-```
-
 #### Chronyd
 
 Instalar paquetes necesarios.
