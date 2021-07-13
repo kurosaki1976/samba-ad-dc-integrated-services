@@ -2723,14 +2723,11 @@ La integración de los servicios descritos en esta guía, también son funcional
 * [Configure DHCP to update DNS records with BIND9](https://wiki.samba.org/index.php/Configure_DHCP_to_update_DNS_records_with_BIND9)
 * [Setting up a BIND DNS Server](https://wiki.samba.org/index.php/Setting_up_a_BIND_DNS_Server)
 * [Password Settings Objects](https://wiki.samba.org/index.php/Password_Settings_Objects)
-* [Unir un servidor Debian 8 y sus derivados en Dominio Active Directory Samba4 ó Windows Server](http://cubatic.cubava.cu/2018/10/29/unir-un-servidor-debian-8-y-sus-derivados-en-dominio-active-directory-samba4-o-windows-server/)
 * [Samba4 as Active Directory Domain Controller](https://redtic.uclv.cu/dokuwiki/samba4_as_ad_dc)
 * [SAMBA - Debian - Installation d'un AD Samba pour un nouveau domaine](https://dev.tranquil.it/wiki/SAMBA_-_Debian_-_Installation_d%27un_AD_Samba_pour_un_nouveau_domaine)
 * [SAMBA - Integration avec bind9](https://dev.tranquil.it/wiki/SAMBA_-_Integration_avec_bind9)
 * [SAMBA - Configuration Samba4 NTP](https://dev.tranquil.it/wiki/SAMBA_-_Configuration_Samba4_NTP)
 * [Time Synchronisation - SambaWiki - Samba.org](https://wiki.samba.org/index.php/Time_Synchronisation)
-* [SERNET: Una solución para la instalación de un controlador de dominio en Samba4 Parte I](http://cubatic.cubava.cu/2018/08/01/sernet-una-solucion-para-la-instalacion-de-un-controlador-de-dominio-en-samba4-parte-i/)
-* [SERNET: Una solución para la instalación de un controlador de dominio en Samba4 Parte II](http://cubatic.cubava.cu/2018/08/01/sernet-una-solucion-para-la-instalacion-de-un-controlador-de-dominio-en-samba4-parte-i-esta-bloqueado-sernet-una-solucion-para-la-instalacion-de-un-controlador-de-dominio-en-samb/)
 * [Herramientas de administración de servidor remoto (RSAT) para windows](https://support.microsoft.com/es-es/help/2693643/remote-server-administration-tools-rsat-for-windows-operating-systems)
 * [Samba 4 como Controlador de Dominios AD DC en Debian 9](https://usuariodebian.blogspot.com/2019/04/samba-4-como-controlador-de-dominios-ad.html)
 * [Setting up a Samba 4 Domain Controller on Debian 9](https://jonathonreinhart.com/posts/blog/2019/02/11/setting-up-a-samba-4-domain-controller-on-debian-9/)
@@ -2764,7 +2761,6 @@ La integración de los servicios descritos en esta guía, también son funcional
 * [Step 5. Configure Kerberos authentication on Squid](https://docs.diladele.com/administrator_guide_6_4/active_directory/kerberos/index.html)
 * [linux - Authenticating Squid 3.5 with Active Directory](https://unix.stackexchange.com/questions/491261/authenticating-squid-3-5-with-active-directory-samba-4-on-ubuntu-16-04)
 * [Creating a Kerberos service principal name and keytab file](https://www.ibm.com/support/knowledgecenter/en/SSAW57_8.5.5/com.ibm.websphere.nd.multiplatform.doc/ae/tsec_kerb_create_spn.html)
-* [Configurar Servidor Proxy-Http Squid3.X con autenticación por protocolo Kerberos](https://cubatic.cubava.cu/2018/11/13/configurar-servidor-proxy-http-squid3-x-con-autenticacion-por-protocolo-kerberos/)
 * [wsauth Diladele](http://packages.diladele.com/websafety/7.0.0.7A5E/amd64/release/debian9/websafety-7.0.0.7A5E_amd64.deb)
 
 ### eJabberd XMPP Server
