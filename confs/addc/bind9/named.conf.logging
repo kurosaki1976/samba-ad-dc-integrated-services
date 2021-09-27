@@ -1,5 +1,7 @@
 logging {
-    channel default_syslog { syslog local2; };
+    channel default_syslog {
+        syslog local2;
+    };
     channel audit_log {
         file "/var/log/bind/audit.log" size 10m;
         severity debug;
@@ -14,7 +16,9 @@ logging {
         print-category yes;
         print-severity yes;
     };
-    channel null { null; };
+    channel null {
+        null;
+    };
     category default { default_syslog; };
     category general { audit_log; };
     category security { audit_log; };
