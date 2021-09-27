@@ -14,4 +14,4 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 52 6	* * 7	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.weekly )
 14 6	1 * *	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.monthly )
 #
-59 23	* * *	root	msktutil --auto-update --verbose --computer-name proxy > /dev/null 2>&1
+59 23	* * *	root	msktutil --auto-update --computer-name proxy > /dev/null 2>&1
