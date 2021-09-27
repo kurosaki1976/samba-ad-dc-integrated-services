@@ -31,7 +31,7 @@ server {
             return 404;
         }
         fastcgi_param HTTP_PROXY "";
-        fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
+        fastcgi_pass unix:/var/run/php/php7.4-fpm.sock;
         include snippets/fastcgi-php.conf;
     }
     rewrite ^(/(?:a|A)utodiscover/(?:a|A)utodiscover\.xml)$ /autodiscover/autodiscover.xml;
