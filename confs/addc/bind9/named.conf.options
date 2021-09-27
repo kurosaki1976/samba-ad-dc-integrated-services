@@ -4,15 +4,12 @@ options {
     server-id none;
     directory "/var/cache/bind";
     max-cache-size 10m;
-    cleaning-interval 15;
     max-cache-ttl 60;
     max-ncache-ttl 60;
     forwarders { 8.8.8.8; 8.8.4.4; };
     forward first;
     auth-nxdomain yes;
-    dnssec-enable yes;
     dnssec-validation yes;
-    dnssec-lookaside no;
     listen-on-v6 { none; };
     listen-on port 53 { 127.0.0.1; 192.168.0.1; };
     tkey-gssapi-keytab "/var/lib/samba/private/dns.keytab";
@@ -28,16 +25,4 @@ options {
 controls {
     inet 127.0.0.1 port 953
     allow { localhost; 192.168.0.1; } keys { rndc-key; };
-};
-
-logging {
-    channel xfer-log {
-        file "/var/log/named.log";
-        print-category yes;
-        print-severity yes;
-        severity info;
-    };
-    category xfer-in { xfer-log; };
-    category xfer-out { xfer-log; };
-    category notify { xfer-log; };
 };
