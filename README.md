@@ -73,15 +73,15 @@
   - [Postfix/Dovecot/Roundcube Mail Server](#postfixdovecotroundcube-mail-server-2)
   - [Proxmox VE](#proxmox-ve)
 - [Anexos](#anexos)
-  - [Ficheros de configuración prinicipal Squid+Samba AD DC]
-    - [Debian 10/11 Squid 4.x](confs/proxy/squid.conf)
+  - [Fichero de configuración prinicipal Squid+Samba AD DC]
+    - [Debian 10/11 Squid 4.x](confs/proxy/squid/squid.conf)
   - [Ficheros de configuración prinicipal eJabberd+Samba AD DC]
     - [Debian 10 Buster eJabberd 18](confs/xmpp/ejabberd/ejabberd-18.yml)
     - [Debian 11 Bullseye eJabberd 21](confs/xmpp/ejabberd/ejabberd-21.yml)
   - [Ficheros de configuración prinicipal Postfix+Samba AD DC]
     - [Configuración general](confs/mail/postfix/main.cf)
     - [Configuración de servicios](confs/mail/postfix/master.cf)
-  - [Ficheros de configuración prinicipal Dovecot+Samba AD DC]
+  - [Fichero de configuración prinicipal Dovecot+Samba AD DC]
     - [Debian 10/11 Dovecot 2.3](confs/mail/dovecot/dovecot.conf)
   - [Fichero de configuración prinicipal Roundcube+Samba AD DC](confs/mail/www/roundcube/config.inc.php)
   - [Ficheros de publicación web Roundcube]
@@ -1656,7 +1656,7 @@ http_access allow localnet LDAPintranet CUBA
 http_access deny all
 ```
 
-> **NOTA**: El fichero de configuración completo puede obtenerse en [squid.conf](confs/proxy/squid.conf).
+> **NOTA**: El fichero de configuración completo puede obtenerse en [squid.conf](confs/proxy/squid/squid.conf).
 
 ### Comprobaciones
 
@@ -1765,6 +1765,8 @@ disable_sasl_mechanisms:
   - "digest-md5"
   - "X-OAUTH2"
 ```
+
+> **NOTA**: El fichero de configuración completo puede obtenerse en [Debian 10 Buster](confs/xmpp/ejabberd/ejabberd-18.yml) y [Debian 11 Bullseye](confs/xmpp/ejabberd/ejabberd-21.yml).
 
 ### Creación de registros DNS
 
@@ -2184,6 +2186,8 @@ dovecot unix - n n - - pipe
     flags=DRhu user=vmail:vmail argv=/usr/lib/dovecot/dovecot-lda -f ${sender} -d ${recipient}
 ```
 
+> **NOTA**: Los principales ficheros de configuración pueden obtenerse en [main.cf](confs/mail/postfix/main.cf) y [master.cf](confs/mail/postfix/master.cf).
+
 #### Comprobaciones
 
 ```bash
@@ -2254,6 +2258,8 @@ passdb {
     driver = ldap
 }
 ```
+
+> **NOTA**: El fichero de configuración completo puede obtenerse en [dovecot.conf](confs/mail/dovecot/dovecot.conf).
 
 ```bash
 nano /etc/dovecot/dovecot-ldap.conf
@@ -2575,6 +2581,8 @@ $config['ldap_public']["global_ldap_abook"] = array(
     ),
 );
 ```
+
+> **NOTA**: El fichero de configuración completo puede obtenerse en [config.inc.php](confs/mail/www/roundcube/config.inc.php).
 
 ## Comandos y herramientas útiles
 
