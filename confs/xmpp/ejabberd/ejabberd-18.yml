@@ -2,8 +2,8 @@
 ###              ejabberd configuration file
 ###
 loglevel: 4
-log_rotate_count: 0
-log_rotate_date: ""
+log_rotate_count: 1
+log_rotate_size: 5242880
 
 hosts:
   - "example.tld"
@@ -210,7 +210,7 @@ modules:
    ldap_groupdesc: "department"
    ldap_memberattr: "sAMAccountName"
    ldap_useruid: "sAMAccountName"
-   ldap_userdesc: "cn"
+   ldap_userdesc: "description"
    ldap_rfilter: "(objectClass=user)"
    ldap_filter: "(&(objectClass=person)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))"
   mod_s2s_dialback: {}
