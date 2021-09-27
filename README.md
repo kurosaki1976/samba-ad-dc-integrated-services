@@ -2632,7 +2632,7 @@ lxc.cap.drop: mac_admin mac_override sys_module sys_rawio sys_time
 
 La integración de los servicios descritos en esta guía, también son funcionales con el servicio de directorio `Active Directory` de Microsoft Windows.
 
-> **NOTA**: Siempre es recomendable disponer com más de un servidor Controlador de Dominio. A tales efectos, puede consultarse [Installing and configuring a secondary Samba-AD on Debian10](https://dev.tranquil.it/samba/en/samba_config_server/debian/server_secondary_debian.html?highlight=secondary).
+> **NOTA**: Siempre es recomendable disponer con más de un servidor Controlador de Dominio. A tales efectos, puede consultarse la guía [Installing and configuring a secondary Samba-AD on Debian10](https://dev.tranquil.it/samba/en/samba_config_server/debian/server_secondary_debian.html?highlight=secondary).
 
 ## Referencias
 
