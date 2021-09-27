@@ -76,8 +76,8 @@
   - [Ficheros de configuración prinicipal Squid+Samba AD DC]
     - [Debian 10/11 Squid 4.x](confs/proxy/squid.conf)
   - [Ficheros de configuración prinicipal eJabberd+Samba AD DC]
-    - [Debian 9 Stretch eJabberd 16.09](confs/xmpp/ejabberd/ejabberd-16.09.yml)
-    - [Debian 10 Buster eJabberd 18.12](confs/xmpp/ejabberd/ejabberd-18.12.yml)
+    - [Debian 10 Buster eJabberd 18](confs/xmpp/ejabberd/ejabberd-18.yml)
+    - [Debian 11 Bullseye eJabberd 21](confs/xmpp/ejabberd/ejabberd-21.yml)
   - [Ficheros de configuración prinicipal Postfix+Samba AD DC]
     - [Configuración general](confs/mail/postfix/main.cf)
     - [Configuración de servicios](confs/mail/postfix/master.cf)
