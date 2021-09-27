@@ -7,7 +7,7 @@ bind_dn = postfix@example.tld
 bind_pw = P@s$w0rd.345
 search_base = OU=ACME,DC=example,DC=tld
 scope = sub
-query_filter = (&(objectClass=person)(userPrincipalName=%s)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))
-result_attribute = userPrincipalName
+query_filter = (&(objectClass=person)(mail=%s)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))
+result_attribute = mail
 result_format = %d/%u/Maildir/
 debuglevel = 0
