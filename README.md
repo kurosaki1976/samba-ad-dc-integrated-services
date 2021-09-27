@@ -1658,6 +1658,8 @@ http_access allow localnet LDAPintranet CUBA
 http_access deny all
 ```
 
+> **NOTA**: El fichero de configuración completo puede obtenerse en [squid.conf](confs/proxy/squid.conf).
+
 ### Comprobaciones
 
 Usando autenticación `Kerberos`.
