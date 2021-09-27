@@ -2,7 +2,7 @@ proxy_cache_path /tmp/cache keys_zone=cache:10m levels=1:2 inactive=600s max_siz
 server {
     listen 80;
     server_name webmail.example.tld;
-    return 301 https://webmail.example.tld$request_uri;
+    return 301 https://webmail.example.tld:443$request_uri;
 }
 server {
     listen 443 ssl http2;
