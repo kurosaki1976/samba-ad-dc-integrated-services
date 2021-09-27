@@ -82,8 +82,7 @@
     - [Configuración general](confs/mail/postfix/main.cf)
     - [Configuración de servicios](confs/mail/postfix/master.cf)
   - [Ficheros de configuración prinicipal Dovecot+Samba AD DC]
-    - [Debian 9 Stretch Dovecot 2.2](confs/mail/dovecot/dovecot-2.2.conf)
-    - [Debian 10 Buster Dovecot 2.3](confs/mail/dovecot/dovecot-2.3.conf)
+    - [Debian 10/11 Dovecot 2.3](confs/mail/dovecot/dovecot.conf)
   - [Fichero de configuración prinicipal Roundcube+Samba AD DC](confs/mail/www/roundcube/config.inc.php)
   - [Ficheros de publicación web Roundcube]
     - [Servidor Web Nginx](confs/mail/www/nginx/roundcube)
