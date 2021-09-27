@@ -74,15 +74,15 @@
   - [Proxmox VE](#proxmox-ve)
 - [Anexos](#anexos)
   - [Fichero de configuración prinicipal Squid+Samba AD DC]
-    - [Debian 10/11 Squid 4.x](confs/proxy/squid/squid.conf)
+    - [Squid v4.x](confs/proxy/squid/squid.conf)
   - [Ficheros de configuración prinicipal eJabberd+Samba AD DC]
-    - [Debian 10 Buster eJabberd 18](confs/xmpp/ejabberd/ejabberd-18.yml)
-    - [Debian 11 Bullseye eJabberd 21](confs/xmpp/ejabberd/ejabberd-21.yml)
+    - [ejabberd v18.x](confs/xmpp/ejabberd/ejabberd-18.yml)
+    - [ejabberd v21.x](confs/xmpp/ejabberd/ejabberd-21.yml)
   - [Ficheros de configuración prinicipal Postfix+Samba AD DC]
     - [Configuración general](confs/mail/postfix/main.cf)
     - [Configuración de servicios](confs/mail/postfix/master.cf)
   - [Fichero de configuración prinicipal Dovecot+Samba AD DC]
-    - [Debian 10/11 Dovecot 2.3](confs/mail/dovecot/dovecot.conf)
+    - [Dovecot v2.3](confs/mail/dovecot/dovecot.conf)
   - [Fichero de configuración prinicipal Roundcube+Samba AD DC](confs/mail/www/roundcube/config.inc.php)
   - [Ficheros de publicación web Roundcube]
     - [Servidor Web Nginx](confs/mail/www/nginx/roundcube)
@@ -96,7 +96,7 @@ destino de email; sino que está enfocada en exponer la integración de servicio
 Tendiendo en cuenta esto, se pautan las siguientes premisas:
 
 * Sistema Operativo: Debian GNU/Linux 10/11 (instalación base)
-* Repositorio de paquetes distribución Debian 10/11
+* Repositorio de paquetes distribución Debian GNU/Linux 10/11
 * Repositorio de paquetes Samba 4.9.6
 * Existencia de un servidor NTP superior
 * Existencia de un servidor proxy padre
