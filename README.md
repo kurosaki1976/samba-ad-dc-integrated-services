@@ -74,8 +74,7 @@
   - [Proxmox VE](#proxmox-ve)
 - [Anexos](#anexos)
   - [Ficheros de configuración prinicipal Squid+Samba AD DC]
-    - [Debian 9 Stretch Squid 3.5](confs/proxy/squid/squid-3.5.conf)
-    - [Debian 10 Buster Squid 4.6](confs/proxy/squid/squid-4.6.conf)
+    - [Debian 10/11 Squid 4.x](confs/proxy/squid.conf)
   - [Ficheros de configuración prinicipal eJabberd+Samba AD DC]
     - [Debian 9 Stretch eJabberd 16.09](confs/xmpp/ejabberd/ejabberd-16.09.yml)
     - [Debian 10 Buster eJabberd 18.12](confs/xmpp/ejabberd/ejabberd-18.12.yml)
