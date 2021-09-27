@@ -1,7 +1,7 @@
 <?php
 $config = array();
 // Database
-$config['db_dsnw'] = 'DBDRIVER://DBUSER:DBUSERPASSWD@DBHOST/DBNAME';
+$config['db_dsnw'] = 'pgsql://postgres:postgres@localhost/roundcubemail';
 // IMAP
 $config['default_host'] = 'ssl://127.0.0.1';
 $config['default_port'] = 993;
