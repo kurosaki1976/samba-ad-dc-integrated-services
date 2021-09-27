@@ -392,7 +392,7 @@ full_audit:priority = NOTICE
 
 Y en las secciones `[netlogon]` y `[sysvol]`: `vfs objects = dfs_samba4, acl_xattr, full_audit`.
 
-> **NOTA**: El fichero de configuración completo puede obtenerse en [smb.conf](confs/proxy/addc/samba/smb.conf).
+> **NOTA**: El fichero de configuración completo puede obtenerse en [smb.conf](confs/addc/samba/smb.conf).
 
 ### Configuración de Kerberos
 
