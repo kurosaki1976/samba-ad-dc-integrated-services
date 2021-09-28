@@ -2697,7 +2697,6 @@ tls cafile = /etc/samba/tls/example.tld_CA.crt
 * [Step 5. Configure Kerberos authentication on Squid](https://docs.diladele.com/administrator_guide_6_4/active_directory/kerberos/index.html)
 * [linux - Authenticating Squid 3.5 with Active Directory](https://unix.stackexchange.com/questions/491261/authenticating-squid-3-5-with-active-directory-samba-4-on-ubuntu-16-04)
 * [Creating a Kerberos service principal name and keytab file](https://www.ibm.com/support/knowledgecenter/en/SSAW57_8.5.5/com.ibm.websphere.nd.multiplatform.doc/ae/tsec_kerb_create_spn.html)
-* [wsauth Diladele](http://packages.diladele.com/websafety/7.5.0.0ADC/amd64/release/debian10/websafety-7.5.0.0ADC_amd64.deb)
 * [Administrators Guide 7.5 (Stable)](https://docs.diladele.com/administrator_guide_stable/index.html)
 * [Configuring a Squid Server to authenticate off LDAP](https://wiki.squid-cache.org/ConfigExamples/Authenticate/Ldap)
 * [16.2. Setting up Squid as a Caching Proxy With LDAP Authentication](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/networking_guide/setting-up-squid-as-a-caching-proxy-with-ldap-authentication)
