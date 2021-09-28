@@ -2646,7 +2646,7 @@ tls certfile = /etc/samba/tls/dc.example.tld.crt
 tls cafile = /etc/samba/tls/example.tld_CA.crt
 ```
 
-> **NOTA**: En las [Referencias](#referencias) encontrará enlaces a sitios sobre cómo crear una Entidad Certificadora para su organización.
+> **NOTA**: En las Referencias encontrará enlaces a sitios sobre cómo crear una [Entidad Certificadora](#entidad-certificadora) para su organización.
 
 ## Referencias
 
