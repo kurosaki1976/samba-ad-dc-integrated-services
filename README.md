@@ -2637,7 +2637,7 @@ La integración de los servicios descritos en esta guía, también son funcional
 
 > **NOTA**: Siempre es recomendable disponer con más de un servidor Controlador de Dominio. A tales efectos, puede consultarse [Installing and configuring a secondary Samba-AD on Debian10](https://dev.tranquil.it/samba/en/samba_config_server/debian/server_secondary_debian.html?highlight=secondary).
 
-A diferencia de `Microsoft Active Directory`, `Samba AD DC` habilita el soporte `LDAP STARTTLS` y `LDAPS` de forma predeterminada. Durante el aprovisionamiento se genera un certificado autofirmado, que debe ser reemplazado con uno válido dentro de la organización si se quiere explotar correctamente esta funcionalidad. Entoces, solo restaría agregar en el fichero `/etc/samba/smb.conf` en la sección `[global]`, lo siguiente:
+A diferencia de `Microsoft Active Directory`, `Samba AD DC` habilita el soporte `LDAP STARTTLS` y `LDAPS` de forma predeterminada. Durante el aprovisionamiento se genera un certificado autofirmado, que debe ser reemplazado con uno válido dentro de la organización si se quiere explotar correctamente esta funcionalidad. Entonces, solo restaría agregar al fichero `/etc/samba/smb.conf` en la sección `[global]`, lo siguiente:
 
 ```bash
 tls enabled = yes
