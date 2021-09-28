@@ -72,12 +72,13 @@
   - [eJabberd XMPP Server](#ejabberd-xmpp-server-2)
   - [Postfix/Dovecot/Roundcube Mail Server](#postfixdovecotroundcube-mail-server-2)
   - [Proxmox VE](#proxmox-ve)
+  - [Entidad Certificadora](#entidad-certificadora)
 - [Anexos](#anexos)
   - [Fichero de configuración prinicipal Squid+Samba AD DC]
     - [Squid v4.x](confs/proxy/squid/squid.conf)
   - [Ficheros de configuración prinicipal eJabberd+Samba AD DC]
-    - [ejabberd v18.x](confs/xmpp/ejabberd/ejabberd-18.yml)
-    - [ejabberd v21.x](confs/xmpp/ejabberd/ejabberd-21.yml)
+    - [ejabberd v18](confs/xmpp/ejabberd/ejabberd-18.yml)
+    - [ejabberd v21](confs/xmpp/ejabberd/ejabberd-21.yml)
   - [Ficheros de configuración prinicipal Postfix+Samba AD DC]
     - [Configuración general](confs/mail/postfix/main.cf)
     - [Configuración de servicios](confs/mail/postfix/master.cf)
@@ -299,11 +300,11 @@ La distribución de Debian 10 cuenta en sus repositorios de paquetes con la vers
 
 ### Instalación de paquetes necesarios
 
-Deshabilitar la interacción de configuración y proceder con la instalación de paquetes indispensables para `Samba4`, como para la administración del sistema.
+Deshabilitar la interacción de configuración y proceder con la instalación de paquetes indispensables para `Samba4`, y otros necesarios para la administración del sistema.
 
 ```bash
 export DEBIAN_FRONTEND=noninteractive
-apt install samba krb5-user winbind libnss-winbind net-tools bind9 dnsutils ldap-utils smbclient ldb-tools gnupg htop wget screen nmap telnet tcpdump rsync
+apt install samba winbind libnss-winbind krb5-user smbclient ldb-tools python3-crypto screen nmap telnet tcpdump rsync net-tools dnsutils htop apt-transport-https gnupg lsb-release bind9
 unset DEBIAN_FRONTEND
 ```
 
@@ -2520,7 +2521,7 @@ nano /opt/roundcube/config/config.inc.php
 ```
 ```php
 // Database
-$config['db_dsnw'] = 'pgsql://postgres:<contraseña-usuario-postgres>@localhost/roundcubemail';
+$config['db_dsnw'] = 'pgsql://postgres:<postgres_user_password>@localhost/roundcubemail';
 // Samba AD DC Address Book
 $config['autocomplete_addressbooks'] = array(
     'sql',
@@ -2632,7 +2633,18 @@ lxc.cap.drop: mac_admin mac_override sys_module sys_rawio sys_time
 
 La integración de los servicios descritos en esta guía, también son funcionales con el servicio de directorio `Active Directory` de Microsoft Windows.
 
-> **NOTA**: Siempre es recomendable disponer con más de un servidor Controlador de Dominio. A tales efectos, puede consultarse la guía [Installing and configuring a secondary Samba-AD on Debian10](https://dev.tranquil.it/samba/en/samba_config_server/debian/server_secondary_debian.html?highlight=secondary).
+> **NOTA**: Siempre es recomendable disponer con más de un servidor Controlador de Dominio. A tales efectos, puede consultarse [Installing and configuring a secondary Samba-AD on Debian10](https://dev.tranquil.it/samba/en/samba_config_server/debian/server_secondary_debian.html?highlight=secondary).
+
+A diferencia de `Microsoft Active Directory`, `Samba AD DC` habilita el soporte `LDAP STARTTLS` y `LDAPS` de forma predeterminada. Durante el aprovisionamiento se genera un certificado autofirmado, que debe ser reemplazado con uno válido dentro de la organización si se quiere explotar correctamente esta funcionalidad. Entoces, solo restaría agregar en el fichero `/etc/samba/smb.conf` en la sección `[global]`, lo siguiente:
+
+```bash
+tls enabled = yes
+tls keyfile = /etc/samba/tls/dc.example.tld.key
+tls certfile = /etc/samba/tls/dc.example.tld.crt
+tls cafile = /etc/samba/tls/example.tld_CA.crt
+```
+
+> **NOTA**: En las [Referencias](#referencias) encontrará enlaces a sitios sobre cómo crear una Entidad Certificadora para su organización.
 
 ## Referencias
 
@@ -2644,10 +2656,7 @@ La integración de los servicios descritos en esta guía, también son funcional
 * [Configure DHCP to update DNS records with BIND9](https://wiki.samba.org/index.php/Configure_DHCP_to_update_DNS_records_with_BIND9)
 * [Setting up a BIND DNS Server](https://wiki.samba.org/index.php/Setting_up_a_BIND_DNS_Server)
 * [Password Settings Objects](https://wiki.samba.org/index.php/Password_Settings_Objects)
-* [PDC sencillo con Samba 4 Debian 9](https://admlinux.cubava.cu/2018/02/21/pdc-sencillo-con-samba-4-en-debian-9/)
 * [Active Directory Domain Controller con Samba4 + Bind9 y Delegación de zona Actualizado](http://admlinux.cubava.cu/2019/01/14/addc-con-samba4-bind9-y-delegacion-de-zona/)
-* [PDC + Samba 4 + DLZ o PDC con Samba4 y delegación de zona Debian9](http://admlinux.cubava.cu/2018/02/27/pdc-con-samba-4-dlz-en-debian-9/)
-* [Unir un servidor Debian 8 y sus derivados en Dominio Active Directory Samba4 ó Windows Server](http://cubatic.cubava.cu/2018/10/29/unir-un-servidor-debian-8-y-sus-derivados-en-dominio-active-directory-samba4-o-windows-server/)
 * [Samba4 as Active Directory Domain Controller](https://redtic.uclv.cu/dokuwiki/samba4_as_ad_dc)
 * [SAMBA - Debian - Installation d'un AD Samba pour un nouveau domaine](https://dev.tranquil.it/wiki/SAMBA_-_Debian_-_Installation_d%27un_AD_Samba_pour_un_nouveau_domaine)
 * [SAMBA - Integration avec bind9](https://dev.tranquil.it/wiki/SAMBA_-_Integration_avec_bind9)
@@ -2656,8 +2665,6 @@ La integración de los servicios descritos en esta guía, también son funcional
 * [SERNET: Una solución para la instalación de un controlador de dominio en Samba4 Parte I](http://cubatic.cubava.cu/2018/08/01/sernet-una-solucion-para-la-instalacion-de-un-controlador-de-dominio-en-samba4-parte-i/)
 * [SERNET: Una solución para la instalación de un controlador de dominio en Samba4 Parte II](http://cubatic.cubava.cu/2018/08/01/sernet-una-solucion-para-la-instalacion-de-un-controlador-de-dominio-en-samba4-parte-i-esta-bloqueado-sernet-una-solucion-para-la-instalacion-de-un-controlador-de-dominio-en-samb/)
 * [Herramientas de administración de servidor remoto (RSAT) para windows](https://support.microsoft.com/es-es/help/2693643/remote-server-administration-tools-rsat-for-windows-operating-systems)
-* [Samba 4 como Controlador de Dominios AD DC en Debian 9](https://usuariodebian.blogspot.com/2019/04/samba-4-como-controlador-de-dominios-ad.html)
-* [Setting up a Samba 4 Domain Controller on Debian 9](https://jonathonreinhart.com/posts/blog/2019/02/11/setting-up-a-samba-4-domain-controller-on-debian-9/)
 * [Raising the Functional Levels](https://wiki.samba.org/index.php/Raising_the_Functional_Levels)
 * [Samba/Active Directory domain controller - ArchWiki](https://wiki.archlinux.org/index.php/Samba/Active_Directory_domain_controller)
 * [ISC DHCP Server - Debian Wiki](https://wiki.debian.org/DHCP_Server)
@@ -2681,6 +2688,7 @@ La integración de los servicios descritos en esta guía, también son funcional
 * [Fonctionnalités avancées de Samba Active Directory](https://dev.tranquil.it/samba/fr/samba_advanced_methods/samba_advanced_methods.html)
 * [Configuring LDAP over SSL (LDAPS) on a Samba AD DC](https://wiki.samba.org/index.php/Configuring_LDAP_over_SSL_LDAPS_on_a_Samba_AD_DC)
 * [Universidad-Tecnologica-CUJAE/AD-webmanager](https://github.com/Universidad-Tecnologica-CUJAE/AD-webmanager)
+* [Managing Samba from the command line](https://dev.tranquil.it/samba/en/samba_config_server/samba_commands_utils.html)
 
 ### Squid Proxy Server
 
@@ -2701,12 +2709,13 @@ La integración de los servicios descritos en esta guía, también son funcional
 * [16.3. Setting up Squid as a Caching Proxy With Kerberos Authentication](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/networking_guide/setting-up-squid-as-a-caching-proxy-with-kerberos-authentication)
 * [16.1.5.1. Joining a Domain](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/system_administrators_guide/ch-file_and_print_servers#setting_up_samba_as_a_domain_member)
 
-### eJabberd XMPP Server
+### ejabberd XMPP Server
 
 * [Installing ejabberd](https://docs.ejabberd.im/admin/installation/)
 * [How to install Ejabberd XMPP Server on Ubuntu 18.04 / Ubuntu 16.04](https://computingforgeeks.com/how-to-install-ejabberd-xmpp-server-on-ubuntu-18-04-ubuntu-16-04/)
 * [installation - ejabberd (18.01-2) install on ubuntu server 18](https://serverfault.com/questions/929523/ejabberd-18-01-2-install-on-ubuntu-server-18-fails-cannot-start-ejabberd)
-* [Configure a simple chat server using ejabberd ( on Debian)](https://www.geekonline.in/blog/2018/10/28/configure-a-simple-chat-server-using-ejabberd-on-debian/)
+* [Configure a simple chat server using ejabberd (on Debian)](https://www.geekonline.in/blog/2018/10/28/configure-a-simple-chat-server-using-ejabberd-on-debian/)
+* [LDAP Configuration](https://docs.ejabberd.im/admin/configuration/ldap/)
 * [Configure ldap authentication (active directory)](https://www.ejabberd.im/node/2962/index.html)
 * [Ejabberd Active Directory LDAP Login](https://raymii.org/s/tutorials/Ejabberd_Active_Directory_LDAP_Login.html)
 * [Making ejabberd 14.12 work with Microsoft Windows Active Directory](http://s.co.tt/2015/02/05/making-ejabberd-14-12-work-with-microsoft-windows-active-directory-ldap/)
@@ -2750,4 +2759,13 @@ La integración de los servicios descritos en esta guía, también son funcional
 * [[SOLVED] Problem LXC mariadb debian 10](https://forum.proxmox.com/threads/problem-lxc-mariadb-debian-10.55926/)
 * [LXC - perl: warning: Setting locale failed](https://forum.proxmox.com/threads/lxc-perl-warning-setting-locale-failed.32173/)
 * [capabilities(7) — Linux manual page](https://man7.org/linux/man-pages/man7/capabilities.7.html)
-* [LXC containers without CAP_SYS_ADMIN under Debian Jessie](https://blog.iwakd.de/lxc-cap_sys_admin-jessie)
+
+### Entidad Certificadora
+
+* [Certificate Authority](https://roll.urown.net/ca/)
+* [Configuring LDAP over SSL (LDAPS) on a Samba AD DC](https://wiki.samba.org/index.php/Configuring_LDAP_over_SSL_(LDAPS)_on_a_Samba_AD_DC)
+* [How To Set Up and Configure a Certificate Authority (CA) On Debian 10](https://www.digitalocean.com/community/tutorials/how-to-set-up-and-configure-a-certificate-authority-ca-on-debian-10)
+* [Easy-RSA Advanced Reference](https://github.com/OpenVPN/easy-rsa/blob/master/doc/EasyRSA-Advanced.md)
+* [easy-rsa Setting up your own PKI - the simple way](https://vxsan.com/setting-up-your-own-pki-the-simple-way/)
+* [Easy-RSA](https://wiki.archlinux.org/index.php/Easy-RSA)
+* [Certificate Authority Management](https://docs.netgate.com/pfsense/en/latest/certificates/ca.html)
