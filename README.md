@@ -2032,6 +2032,8 @@ samba-tool group addmembers 'Management' sheldon
 samba-tool group addmembers 'Support' rajesh,sheldon
 ```
 
+> **NOTA**: Es importante definir siempre la dirección de correo electrónico en el momento de crear cuentas de usuarios y grupos, de lo contrario no se obtendrán los resultados esperados.
+
 ### Configuración de Postfix
 
 Realizar copia de seguridad de los ficheros de configuración.
