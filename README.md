@@ -296,11 +296,11 @@ journalctl --since -1h -u systemd-timesyncd
 
 ## Instalación y configuración de Samba como AD DC
 
+La distribución de Debian 10 cuenta en sus repositorios de paquetes con la versión de Samba 4.9.5, la cual no contiene algunas mejoras para la gestión de Unidades Organizativas mediante la herramienta `samba-tool`. Es por ello que se recomienda usar un repositorio de paquetes de la versión 4.9.6 o superior. En esta guía se usará el que proporciona el grupo francés [Tranquil IT Systems](http://samba.tranquil.it/debian/).
+
 ### Requerimientos de hardware
 
 En entornos de producción, se recomienda un mínimo de 2Gb de RAM. En organizacones con un máximo de 100 usuarios 10Gb de espacio en disco duro, es suficiente; no obstante el almacenamiento estará condionado a particularidades como: niveles de registro y política de retención de registros, uso de imágenes (avatares) para identificar a los usuarios, y número de usuarios, máquinas y grupos. Con relación a CPU, para no más de 100 usuarios, es suficiente con 2.
-
-La distribución de Debian 10 cuenta en sus repositorios de paquetes con la versión de Samba 4.9.5, la cual no contiene algunas mejoras para la gestión de Unidades Organizativas mediante la herramienta `samba-tool`. Es por ello que se recomienda usar un repositorio de paquetes de la versión 4.9.6 o superior. En esta guía se usará el que proporciona el grupo francés [Tranquil IT Systems](http://samba.tranquil.it/debian/).
 
 ### Instalación de paquetes necesarios
 
