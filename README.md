@@ -1,4 +1,4 @@
-# Guía para la implementación de servicios integrados a Samba como Active Directory Domain Controller (AD DC) en Debian 10/11
+# Guía para la implementación de servicios integrados a Samba como Active Directory Domain Controller (Samba AD DC) en Debian 10/11
 
 ## Autores
 
