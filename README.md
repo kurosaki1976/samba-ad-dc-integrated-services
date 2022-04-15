@@ -576,9 +576,9 @@ options {
 ##### Definir bitácora de eventos
 
 ```bash
-mkdir -p /var/log/bind/
-chown -R bind /var/log/bind/
-chmod u+rw /var/log/bind/
+mkdir -p /var/log/named/
+chown -R bind /var/log/named/
+chmod u+rw /var/log/named/
 ```
 
 ```bash
@@ -589,14 +589,14 @@ logging {
         syslog local2;
     };
     channel audit_log {
-        file "/var/log/bind/audit.log" size 10m;
+        file "/var/log/named/audit.log" size 10m;
         severity debug;
         print-category yes;
         print-severity yes;
         print-time yes;
     };
     channel requests_log {
-        file "/var/log/bind/requests.log" size 10m;
+        file "/var/log/named/requests.log" size 10m;
         severity debug;
         print-time yes;
         print-category yes;
@@ -626,9 +626,9 @@ Agregar al final del fichero `/etc/bind/named.conf` la directiva `include "/etc/
 ##### Definir rotación de los archivos de bitácora
 
 ```bash
-nano /etc/logrotate.d/bind
+nano /etc/logrotate.d/named
 
-/var/log/bind/audit.log {
+/var/log/named/audit.log {
     daily
     missingok
     rotate 7
@@ -637,11 +637,11 @@ nano /etc/logrotate.d/bind
     notifempty
     create 644 bind bind
     postrotate
-        systemctl reload bind9 > /dev/null
+        systemctl reload named > /dev/null
     endscript
 }
 
-/var/log/bind/requests.log {
+/var/log/named/requests.log {
     daily
     missingok
     rotate 7
@@ -650,7 +650,7 @@ nano /etc/logrotate.d/bind
     notifempty
     create 644 bind bind
     postrotate
-        systemctl reload bind9 > /dev/null
+        systemctl reload named > /dev/null
     endscript
 }
 ```
