@@ -308,7 +308,7 @@ Deshabilitar la interacción de configuración y proceder con la instalación de
 
 ```bash
 export DEBIAN_FRONTEND=noninteractive
-apt install samba winbind libnss-winbind krb5-user smbclient ldb-tools python3-crypto screen nmap telnet tcpdump rsync net-tools dnsutils htop apt-transport-https gnupg lsb-release bind9
+apt install samba winbind libnss-winbind krb5-user smbclient ldb-tools python3-cryptography screen nmap telnet tcpdump rsync net-tools dnsutils htop apt-transport-https gnupg lsb-release bind9
 unset DEBIAN_FRONTEND
 ```
 
