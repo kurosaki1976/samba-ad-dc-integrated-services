@@ -531,11 +531,11 @@ chmod g+r /var/lib/samba/private/dns.keytab
 ##### Parámetros del servicio
 
 ```bash
-mv /etc/default/bind9{,.org}
+mv /etc/default/named{,.org}
 ```
 
 ```bash
-nano /etc/default/bind9
+nano /etc/default/named
 
 RESOLVCONF=no
 OPTIONS="-4 -u bind"
@@ -672,8 +672,8 @@ update-policy {
 Reiniciar los servicios.
 
 ```bash
-systemctl restart logrotate samba-ad-dc bind9
-systemctl enable bind9
+systemctl restart logrotate samba-ad-dc named
+systemctl enable named
 ```
 
 ### Creación de zona inversa y registro `PTR` del servidor
