@@ -296,13 +296,20 @@ journalctl --since -1h -u systemd-timesyncd
 
 ## Instalación y configuración de Samba como AD DC
 
-La distribución de Debian 10 cuenta en sus repositorios de paquetes con la versión de Samba 4.9.5, la cual no contiene algunas mejoras para la gestión de Unidades Organizativas mediante la herramienta `samba-tool`. Es por ello que se recomienda usar un repositorio de paquetes de la versión 4.9.6 o superior. En esta guía se usará el que proporciona el grupo francés [Tranquil IT Systems](https://samba.tranquil.it/doc/en/index.html).
+La distribución de Debian 12 cuenta en sus repositorios de paquetes con la versión de Samba 4.17, que contiene algunas mejoras para la gestión de Unidades Organizativas mediante la herramienta `samba-tool`; no obstante, se recomienda usar un repositorio de paquetes de la versión 4.18 o superior. En esta guía se usará el que proporciona el grupo francés [Tranquil IT Systems](https://samba.tranquil.it/doc/en/index.html).
 
 ### Requerimientos de hardware
 
 En entornos de producción, se recomienda un mínimo de 2Gb de RAM. En organizacones con un máximo de 100 usuarios 10Gb de espacio en disco duro, es suficiente; no obstante el almacenamiento estará condionado a particularidades como: niveles de registro y política de retención de registros, uso de imágenes (avatares) para identificar a los usuarios, y número de usuarios, máquinas y grupos. Con relación a CPU, para no más de 100 usuarios, es suficiente con 2.
 
 ### Instalación de paquetes necesarios
+
+Deshabilitar los protocolos de Apple `avahi-daemon` (`mDNS` / `bonjour`):
+
+```bash
+systemctl stop avahi-daemon.service avahi-daemon.socket
+systemctl disable avahi-daemon.service avahi-daemon.socket
+```
 
 Deshabilitar la interacción de configuración y proceder con la instalación de paquetes indispensables para `Samba4`, y otros necesarios para la administración del sistema.
 
