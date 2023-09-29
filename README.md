@@ -315,7 +315,7 @@ Deshabilitar la interacción de configuración y proceder con la instalación de
 
 ```bash
 export DEBIAN_FRONTEND=noninteractive
-apt install samba winbind libnss-winbind krb5-user smbclient ldb-tools python3-cryptography screen nmap telnet tcpdump rsync net-tools dnsutils htop apt-transport-https gnupg lsb-release bind9
+apt install samba winbind libnss-winbind krb5-user smbclient ldb-tools python3-cryptography sudo screen nmap telnet tcpdump rsync net-tools dnsutils htop apt-transport-https vim gnupg lsb-release bind9
 unset DEBIAN_FRONTEND
 ```
 
@@ -324,8 +324,11 @@ unset DEBIAN_FRONTEND
 Detener y deshabilitar todos los servicios relacionados con Samba.
 
 ```bash
-systemctl stop samba-ad-dc smbd nmbd winbind bind9
-systemctl disable samba-ad-dc smbd nmbd winbind bind9
+systemctl stop samba winbind nmbd smbd bind9
+systemctl disable samba winbind nmbd smbd bind9
+systemctl mask samba winbind nmbd smbd
+systemctl unmask samba-ad-dc
+systemctl enable samba-ad-dc
 ```
 
 Opcionalmente se puede hacer una copia del archivo de configuración inicial de Samba ya que se sobrescribe durante el aprovisionamiento.
@@ -442,10 +445,8 @@ nano /etc/krb5.conf
 Iniciar, verificar el estado y habilitar el servicio de Samba AD DC.
 
 ```bash
-systemctl unmask samba-ad-dc
 systemctl start samba-ad-dc
 systemctl status samba-ad-dc
-systemctl enable samba-ad-dc
 ```
 
 Evitar que la cuenta del usuario `Administrator` expire.
@@ -528,6 +529,8 @@ dlz "samba4" {
 ```
 
 ```bash
+mkdir /var/lib/samba/bind-dns
+mkdir /var/lib/samba/bind-dns/dns
 samba_upgradedns --dns-backend=BIND9_DLZ
 chgrp bind /var/lib/samba/private/dns.keytab
 chmod g+r /var/lib/samba/private/dns.keytab
@@ -567,8 +570,8 @@ options {
     max-ncache-ttl 60;
     forwarders { 8.8.8.8; 8.8.4.4; };
     forward first;
-    dnssec-validation yes;
-    auth-nxdomain yes;
+    dnssec-validation no;
+    auth-nxdomain no;
     listen-on-v6 { none; };
     tkey-gssapi-keytab "/var/lib/samba/private/dns.keytab";
     allow-query { 192.168.0.0/24; 127.0.0.1; };
@@ -729,7 +732,8 @@ El servidor Samba AD DC actuará como servidor de tiempo (Network Time Protocol 
 Instalar paquetes necesarios.
 
 ```bash
-apt install chrony
+apt install chrony ntpdate
+ntpdate -bu ntp.tld
 ```
 
 Configurar el servicio.
@@ -741,7 +745,7 @@ mv /etc/chrony/chrony.conf{,.org}
 ```bash
 nano /etc/chrony/chrony.conf
 
-pool ntp.tld iburst
+server ntp.tld iburst
 driftfile /var/lib/chrony/drift
 makestep 1.0 3
 rtcsync
@@ -756,7 +760,7 @@ ntpsigndsocket /var/lib/samba/ntp_signd
 Establecer permisos.
 
 ```bash
-chgrp _chrony /var/lib/samba/ntp_signd
+chown root:_chrony /var/lib/samba/ntp_signd/
 chmod 750 /var/lib/samba/ntp_signd/
 ```
 
@@ -764,6 +768,7 @@ Reiniciar el servicio.
 
 ```bash
 systemctl restart chronyd
+systemctl enable chronyd
 ```
 
 ### Comprobaciones
