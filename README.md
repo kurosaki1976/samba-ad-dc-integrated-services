@@ -2702,7 +2702,7 @@ tls cafile = /etc/samba/tls/example.tld_CA.crt
 * [Fonctionnalités avancées de Samba Active Directory](https://dev.tranquil.it/samba/fr/samba_advanced_methods/samba_advanced_methods.html)
 * [Configuring LDAP over SSL (LDAPS) on a Samba AD DC](https://wiki.samba.org/index.php/Configuring_LDAP_over_SSL_LDAPS_on_a_Samba_AD_DC)
 * [Universidad-Tecnologica-CUJAE/AD-webmanager](https://github.com/Universidad-Tecnologica-CUJAE/AD-webmanager)
-* [Managing Samba from the command line](https://dev.tranquil.it/samba/en/samba_config_server/samba_commands_utils.html)
+* [Managing Samba from the command line](https://samba.tranquil.it/doc/en/samba_config_server/samba_commands_utils.html)
 
 ### Squid Proxy Server
 
