@@ -590,46 +590,49 @@ options {
 mkdir -p /var/log/named/
 chown -R bind /var/log/named/
 chmod u+rw /var/log/named/
+touch /var/log/named/{audit.log,requests.log}
+chown bind:root /var/log/named/*.log
 ```
 
 ```bash
 nano /etc/bind/named.conf.log
 
 logging {
-    channel default_syslog {
-        syslog local2;
-    };
-    channel audit_log {
-        file "/var/log/named/audit.log" size 10m;
-        severity debug;
-        print-category yes;
-        print-severity yes;
-        print-time yes;
-    };
-    channel requests_log {
-        file "/var/log/named/requests.log" size 10m;
-        severity debug;
-        print-time yes;
-        print-category yes;
-        print-severity yes;
-    };
-    channel null {
-        null;
-    };
-    category default { default_syslog; };
-    category general { audit_log; };
-    category security { audit_log; };
-    category config { audit_log; };
-    category resolver { audit_log; };
-    category xfer-in { audit_log; };
-    category xfer-out { audit_log; };
-    category notify { audit_log; };
-    category client { audit_log; };
-    category network { audit_log; };
-    category update { audit_log; };
-    category queries { requests_log; audit_log; };
-    category lame-servers { null; };
-};
+     channel default_syslog {
+             syslog local2;
+     };
+     channel audit_log {
+             file "/var/log/named/audit.log" size 10m;
+             severity debug;
+             print-category yes;
+             print-severity yes;
+             print-time yes;
+     };
+     channel requests_log {
+             // DNS requests logging
+             file "/var/log/named/requests.log" size 10m;
+             severity debug;
+             print-time yes;
+             print-category yes;
+             print-severity yes;
+     };
+     channel null {
+             null;
+     };
+     category default { default_syslog; };
+     category general { audit_log; };
+     category security { audit_log; };
+     category config { audit_log; };
+     category resolver { audit_log; };
+     category xfer-in { audit_log; };
+     category xfer-out { audit_log; };
+     category notify { audit_log; };
+     category client { audit_log; };
+     category network { audit_log; };
+     category update { audit_log; };
+     category queries { requests_log; audit_log; };
+     category lame-servers { null; };
+   };
 ```
 
 Agregar al final del fichero `/etc/bind/named.conf` la directiva `include "/etc/bind/named.conf.log";`.
