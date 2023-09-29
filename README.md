@@ -2657,14 +2657,13 @@ tls cafile = /etc/samba/tls/example.tld_CA.crt
 ### Samba AD DC+Bind9 DNS Server+NTP+DHCP
 
 * [Setting up Samba as an Active Directory Domain Controller](https://wiki.samba.org/index.php/Setting_up_Samba_as_an_Active_Directory_Domain_Controller)
-* [Installing and configuring a secondary Samba-AD on Debian10](https://dev.tranquil.it/samba/en/samba_config_server/debian/server_secondary_debian.html?highlight=secondary)
 * [Samba changelog: strong auth required](https://wiki.samba.org/index.php/Samba_4.4_Features_added/changed#ldap_server_require_strong_auth_.28G.29)
 * [Configure DHCP to update DNS records with BIND9](https://wiki.samba.org/index.php/Configure_DHCP_to_update_DNS_records_with_BIND9)
 * [Setting up a BIND DNS Server](https://wiki.samba.org/index.php/Setting_up_a_BIND_DNS_Server)
 * [Password Settings Objects](https://wiki.samba.org/index.php/Password_Settings_Objects)
-* [SAMBA - Debian - Installation d'un AD Samba pour un nouveau domaine](https://dev.tranquil.it/wiki/SAMBA_-_Debian_-_Installation_d%27un_AD_Samba_pour_un_nouveau_domaine)
-* [SAMBA - Integration avec bind9](https://dev.tranquil.it/wiki/SAMBA_-_Integration_avec_bind9)
-* [SAMBA - Configuration Samba4 NTP](https://dev.tranquil.it/wiki/SAMBA_-_Configuration_Samba4_NTP)
+* [Installing and configuring Samba-AD on Debian](https://samba.tranquil.it/doc/en/samba_config_server/debian/server_install_samba_debian.html)
+* [Installing and configuring Bind-DLZ for Samba-AD](https://samba.tranquil.it/doc/en/samba_config_server/debian/server_install_binddlz_debian.html#server-install-binddlz-debian)
+* [Installing and configuring NTP Chrony for Samba-AD Debian](https://samba.tranquil.it/doc/en/samba_config_server/debian/server_install_ntp_debian.html#server-install-ntp-debian)
 * [Time Synchronisation - SambaWiki - Samba.org](https://wiki.samba.org/index.php/Time_Synchronisation)
 * [Herramientas de administración de servidor remoto (RSAT) para windows](https://support.microsoft.com/es-es/help/2693643/remote-server-administration-tools-rsat-for-windows-operating-systems)
 * [Raising the Functional Levels](https://wiki.samba.org/index.php/Raising_the_Functional_Levels)
