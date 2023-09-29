@@ -428,6 +428,7 @@ nano /etc/krb5.conf
 
 [realms]
     EXAMPLE.TLD = {
+        kdc = 127.0.0.1
         kdc = DC.EXAMPLE.TLD
         master_kdc = DC.EXAMPLE.TLD
         admin_server = DC.EXAMPLE.TLD
