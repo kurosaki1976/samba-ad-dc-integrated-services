@@ -5,7 +5,7 @@ server {
     return 301 https://webmail.example.tld:443$request_uri;
 }
 server {
-    listen 443 ssl http2;
+    listen 443 ssl;
     root /opt/roundcube;
     server_name webmail.example.tld;
     ssl_certificate /etc/ssl/certs/exampleMail.crt;
@@ -19,6 +19,7 @@ server {
     ssl_session_tickets off;
     ssl_stapling_verify on;
     ssi on;
+    http2 on;
     resolver 127.0.0.1 valid=300s;
     resolver_timeout 5s;
     add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload";
