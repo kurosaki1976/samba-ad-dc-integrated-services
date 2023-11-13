@@ -2152,8 +2152,9 @@ bind_dn = postfix@example.tld
 bind_pw = P@s$w0rd.345
 search_base = OU=ACME,DC=example,DC=tld
 scope = sub
-query_filter = (&(objectClass=person)(memberOf=cn=%u,OU=Email,OU=ACME,DC=example,DC=tld)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))
-result_attribute = mail
+query_filter = (&(objectClass=group)(mail=%s)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))
+special_result_attribute = member
+leaf_result_attribute = mail
 debuglevel = 0
 ```
 
