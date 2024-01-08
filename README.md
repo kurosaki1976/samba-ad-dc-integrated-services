@@ -571,7 +571,7 @@ options {
     max-ncache-ttl 60;
     forwarders { 8.8.8.8; 8.8.4.4; };
     forward first;
-    dnssec-validation no;
+    dnssec-validation auto;
     auth-nxdomain no;
     listen-on-v6 { none; };
     tkey-gssapi-keytab "/var/lib/samba/private/dns.keytab";
@@ -590,8 +590,6 @@ options {
 mkdir -p /var/log/named/
 chown -R bind /var/log/named/
 chmod u+rw /var/log/named/
-touch /var/log/named/{audit.log,requests.log}
-chown bind:root /var/log/named/*.log
 ```
 
 ```bash
@@ -632,7 +630,7 @@ logging {
      category update { audit_log; };
      category queries { requests_log; audit_log; };
      category lame-servers { null; };
-   };
+};
 ```
 
 Agregar al final del fichero `/etc/bind/named.conf` la directiva `include "/etc/bind/named.conf.log";`.
@@ -2332,7 +2330,7 @@ chmod 0770 /opt/roundcube/{logs,temp}
 >```bash
 >tar -xzf roundcubemail-*-complete.tar.gz
 >cd roundcubemail-*/
->./bin/install.sh /opt/roundcube/
+>./bin/installto.sh /opt/roundcube/
 >```
 
 #### PostgreSQL
